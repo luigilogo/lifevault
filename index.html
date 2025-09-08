@@ -639,44 +639,14 @@
             capturedImageEl.classList.add('hidden');
             imageLoadingEl.classList.remove('hidden');
 
-            const payload = {
-                contents: [{
-                    parts: [{ text: "A sharp, clear, and high-quality photo of a person in a state of distress, with a neutral background, as if captured by a small wearable device." }]
-                }],
-                generationConfig: {
-                    responseModalities: ['TEXT', 'IMAGE']
-                },
-            };
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
-
-                if (base64Data) {
-                    const imageUrl = `data:image/png;base64,${base64Data}`;
-                    capturedImageEl.src = imageUrl;
-                    capturedImageEl.classList.remove('hidden');
-                    logEvent('Istantanea forense creata con successo.', 'info');
-                } else {
-                    imagePlaceholderEl.textContent = 'Errore durante la generazione dell\'immagine.';
-                    imagePlaceholderEl.classList.remove('hidden');
-                    logEvent('Errore nella generazione dell\'immagine.', 'danger');
-                }
-            } catch (error) {
-                console.error("Errore nella chiamata all'API:", error);
-                imagePlaceholderEl.textContent = 'Errore di rete o API.';
-                imagePlaceholderEl.classList.remove('hidden');
-                logEvent('Errore di rete durante la generazione dell\'immagine.', 'danger');
-            } finally {
+            const imageUrl = `https://placehold.co/400x300/ef4444/ffffff?text=AGRESSORE`;
+            
+            setTimeout(() => {
+                capturedImageEl.src = imageUrl;
+                capturedImageEl.classList.remove('hidden');
                 imageLoadingEl.classList.add('hidden');
-            }
+                logEvent('Istantanea forense creata con successo.', 'info');
+            }, 1000); // Simulazione di un ritardo
         };
 
         const activateEmergencyMode = async (source) => {
