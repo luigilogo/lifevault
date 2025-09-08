@@ -24,6 +24,9 @@
         .card {
             background-color: #1f2937;
             border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .card:hover {
@@ -38,14 +41,14 @@
             50% { transform: scale(1); opacity: 0.5; }
             100% { transform: scale(1.5); opacity: 0; }
         }
-        .emergency-mode {
+        .emergency-mode-bg {
             background-color: #3b0707;
             background-image: radial-gradient(at 50% 100%, #450a0a, #3b0707);
         }
-        #mainContainer.emergency-mode .card {
+        #mainContainer.emergency-mode-bg .card {
             border-color: #ef4444;
         }
-        #mainContainer.emergency-mode #deviceStatus span {
+        #mainContainer.emergency-mode-bg #deviceStatus span {
             color: #fca5a5;
         }
         #emergencyCountdown {
@@ -582,7 +585,7 @@
             clearInterval(sensorInterval);
             manualActivateBtn.disabled = true;
             resetBtn.disabled = false;
-            mainContainerEl.classList.add('emergency-mode');
+            mainContainerEl.classList.add('emergency-mode-bg');
             
             aiStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 animate-pulse"></i> Emergenza Rilevata!`;
             aiStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
@@ -662,7 +665,7 @@
             rightPanel.classList.remove('animate-pulse');
             manualActivateBtn.disabled = false;
             resetBtn.disabled = true;
-            mainContainerEl.classList.remove('emergency-mode');
+            mainContainerEl.classList.remove('emergency-mode-bg');
             aiStatusEl.innerHTML = `<i class="fas fa-brain mr-2"></i> In ascolto...`;
             aiStatusEl.className = 'text-xl font-bold text-sky-400 flex items-center';
             deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
