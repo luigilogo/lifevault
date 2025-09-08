@@ -97,9 +97,17 @@
 
 <div id="mainContainer" class="container-bg shadow-2xl rounded-3xl p-10 max-w-5xl w-full mx-auto transition-all duration-1000">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
-        <div class="flex items-center mb-4 sm:mb-0">
+    <div class="flex flex-col sm:flex-row items-center justify-between mb-10">
+        <div class="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 space-y-4 sm:space-y-0 sm:space-x-4">
             <h1 class="text-5xl font-extrabold text-sky-400">LifeVault</h1>
+            <div class="flex items-center space-x-2">
+                <button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Attiva
+                </button>
+                <button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 text-sm">
+                    <i class="fas fa-undo mr-2"></i> Ripristina
+                </button>
+            </div>
         </div>
         <div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-400 font-semibold">
             <span class="relative flex h-3 w-3">
@@ -148,19 +156,6 @@
                     <canvas id="lidarCanvas" class="w-full h-full"></canvas>
                     <i id="userIcon" class="fas fa-user-circle text-gray-400 absolute text-4xl hidden z-10"></i>
                 </div>
-            </div>
-
-            <!-- Controls and Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Attivazione Manuale
-                </button>
-                <button id="useCaseBtn" class="bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                    <i class="fas fa-user-secret mr-2"></i> Simula Caso d'Uso: Stalking
-                </button>
-                <button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105">
-                    <i class="fas fa-undo mr-2"></i> Ripristina
-                </button>
             </div>
         </div>
 
@@ -381,7 +376,6 @@
         const noiseLevelEl = document.getElementById('noiseLevel');
         const aiStatusEl = document.getElementById('aiStatus');
         const manualActivateBtn = document.getElementById('manualActivateBtn');
-        const useCaseBtn = document.getElementById('useCaseBtn');
         const resetBtn = document.getElementById('resetBtn');
         const eventLogEl = document.getElementById('eventLog');
         const deviceStatusEl = document.getElementById('deviceStatus');
@@ -655,8 +649,7 @@
             emergencyScan = true;
             clearInterval(sensorInterval);
             manualActivateBtn.disabled = true;
-            useCaseBtn.disabled = true;
-            resetBtn.style.display = 'block';
+            resetBtn.disabled = false;
 
             mainContainerEl.classList.add('emergency-mode');
             
@@ -753,8 +746,7 @@
             rightPanel.classList.remove('animate-pulse');
 
             manualActivateBtn.disabled = false;
-            useCaseBtn.disabled = false;
-            resetBtn.style.display = 'block';
+            resetBtn.disabled = true;
 
             mainContainerEl.classList.remove('emergency-mode');
             
@@ -792,35 +784,6 @@
         manualActivateBtn.addEventListener('click', () => {
             generateEmergencyImage();
             activateEmergencyMode('attivazione manuale');
-        });
-
-        useCaseBtn.addEventListener('click', async () => {
-            logEvent('ATTENZIONE: simulazione caso d\'uso Stalking in corso...', 'warning');
-            await speak("Analisi minaccia in corso. Si prega di mantenere la calma.", voiceNames.female);
-            
-            let riskIncreaseInterval = setInterval(() => {
-                currentRiskScore = Math.min(100, currentRiskScore + 10);
-                updateRiskMeter();
-            }, 300);
-
-            setTimeout(async () => {
-                logEvent('L\'IA ha rilevato una serie di eventi anomali: GPS e giroscopio indicano un\'inversione di marcia inaspettata.', 'prediction');
-                gpsLocationEl.textContent = `Inseguimento...`;
-                gyroDataEl.textContent = `Movimento brusco`;
-                await speak("Movimento anomalo rilevato. Allerta innalzata.", voiceNames.female);
-            }, 1500);
-            setTimeout(async () => {
-                heartRateEl.textContent = `135 BPM`;
-                noiseLevelEl.textContent = `Urla`;
-                logEvent('L\'AI ha analizzato il battito cardiaco elevato e il rumore per classificare la minaccia come CRITICA. Preparazione all\'attivazione.', 'danger');
-                clearInterval(riskIncreaseInterval);
-                currentRiskScore = 100;
-                updateRiskMeter();
-                await speak("Minaccia classificata come critica. Avvio della modalità di emergenza.", voiceNames.female);
-            }, 3000);
-            setTimeout(() => {
-                activateEmergencyMode('previsione IA');
-            }, 4500);
         });
 
         resetBtn.addEventListener('click', () => {
