@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -135,6 +135,7 @@
                 </h2>
                 <div id="lidarCanvasContainer" class="bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden h-96">
                     <canvas id="lidarCanvas" class="w-full h-full"></canvas>
+                    <i id="userIcon" class="fas fa-user-circle text-gray-400 absolute text-4xl hidden z-10"></i>
                 </div>
             </div>
 
@@ -153,7 +154,7 @@
         </div>
 
         <!-- Dashboard Right Side -->
-        <div class="flex flex-col space-y-8">
+        <div id="rightPanel" class="flex flex-col space-y-8">
             <!-- Security and AI Panel -->
             <div class="card rounded-2xl p-6">
                 <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
@@ -168,6 +169,7 @@
                     </div>
                     <div>
                         <div class="text-sm text-gray-400">Livello di Rischio:</div>
+                        <div id="riskLevelText" class="text-xl font-bold text-gray-400">Stabile</div>
                         <div class="w-full bg-gray-700 rounded-full h-4 relative mt-2 risk-meter-bg">
                             <div id="riskMeter" class="h-4 rounded-full risk-meter-fill" style="width: 0%; background-color: #4ade80;"></div>
                         </div>
@@ -197,7 +199,7 @@
                     <div>
                         <div class="text-sm text-gray-400">Stato Backup Dati:</div>
                         <div id="dataBufferStatus" class="text-xl font-bold flex items-center text-gray-400">
-                            <i class="fas fa-hdd mr-2 text-gray-500"></i> Buffer vuoto
+                            <i class="fas fa-hdd mr-2"></i> Buffer vuoto
                         </div>
                         <div id="dataBuffer" class="flex mt-2"></div>
                     </div>
@@ -211,17 +213,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Heart Rate Chart Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-heartbeat text-red-500 mr-2"></i> Andamento Frequenza Cardiaca (5 min)
-                </h2>
-                <div class="bg-gray-900 rounded-lg border border-gray-700 p-2 flex items-center justify-center h-48">
-                    <canvas id="heartRateChart" class="w-full h-full"></canvas>
-                </div>
-            </div>
-
+            
             <!-- Event Log Panel -->
             <div class="card rounded-2xl p-6 flex-grow">
                 <h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
@@ -242,11 +234,18 @@
     const roomSize = 25;
     let scanLine;
     let emergencyScan = false;
+    let userIcon;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const voiceNames = {
+        'male': "Kore",
+        'female': "Leda"
+    };
 
     // Funzione per inizializzare la scena 3D
     function init() {
         const container = document.getElementById('lidarCanvasContainer');
         const canvas = document.getElementById('lidarCanvas');
+        userIcon = document.getElementById('userIcon');
 
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x111827);
@@ -278,6 +277,7 @@
         }
 
         generateLidarPoints();
+        userIcon.style.display = 'block';
 
         // Aggiungi un raggio di scansione
         const geometry = new THREE.CylinderGeometry(roomSize / 2, roomSize / 2, 0.1, 32);
@@ -323,6 +323,11 @@
 
         // Animazione del raggio di scansione
         scanLine.rotation.z += 0.01;
+        if(emergencyScan) {
+            scanLine.material.color.setHex(0xef4444); // Red
+        } else {
+            scanLine.material.color.setHex(0x4ade80); // Green
+        }
 
         // Animazione degli oggetti in modalità emergenza
         if (emergencyScan) {
@@ -357,14 +362,14 @@
         const mainContainerEl = document.getElementById('mainContainer');
         const emergencyCountdownEl = document.getElementById('emergencyCountdown');
         const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
-        const heartRateChartCanvas = document.getElementById('heartRateChart');
         const recordingStatusEl = document.getElementById('recordingStatus');
-        const ctx = heartRateChartCanvas.getContext('2d');
         const riskMeterEl = document.getElementById('riskMeter');
+        const riskLevelTextEl = document.getElementById('riskLevelText');
         const audioVisualizerEl = document.getElementById('audioVisualizer');
         const dataBufferEl = document.getElementById('dataBuffer');
         const dataBufferStatusEl = document.getElementById('dataBufferStatus');
         const blockchainContainerEl = document.getElementById('blockchainContainer');
+        const rightPanelEl = document.getElementById('rightPanel');
 
         let isEmergency = false;
         let sensorInterval;
@@ -375,6 +380,110 @@
         const heartRateData = [];
         const maxDataPoints = 300;
         let currentRiskScore = 0;
+
+        // Funzione per la sintesi vocale
+        async function speak(text, voice) {
+          const payload = {
+              contents: [{
+                  parts: [{ text: text }]
+              }],
+              generationConfig: {
+                  responseModalities: ["AUDIO"],
+                  speechConfig: {
+                      voiceConfig: {
+                          prebuiltVoiceConfig: { voiceName: voice }
+                      }
+                  }
+              },
+              model: "gemini-2.5-flash-preview-tts"
+          };
+          const apiKey = "";
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+          try {
+              const response = await fetch(apiUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+              });
+              const result = await response.json();
+              const part = result?.candidates?.[0]?.content?.parts?.[0];
+              const audioData = part?.inlineData?.data;
+              const mimeType = part?.inlineData?.mimeType;
+
+              if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                  const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                  const pcmData = base64ToArrayBuffer(audioData);
+                  const pcm16 = new Int16Array(pcmData);
+                  const wavBlob = pcmToWav(pcm16, sampleRate);
+                  const audioUrl = URL.createObjectURL(wavBlob);
+                  const audio = new Audio(audioUrl);
+                  audio.play();
+              } else {
+                  console.error("Audio data is missing or invalid in the API response.");
+              }
+          } catch (error) {
+              console.error("Error calling TTS API:", error);
+          }
+        }
+        
+        // Funzione di utilità per convertire base64 in ArrayBuffer
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // Funzione di utilità per convertire PCM in WAV
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bitDepth = 16;
+            const bytesPerSample = bitDepth / 8;
+            const dataLength = pcmData.length * bytesPerSample;
+
+            const buffer = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(buffer);
+
+            // WAV header
+            let offset = 0;
+            const writeString = (str) => {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset++, str.charCodeAt(i));
+                }
+            };
+
+            // RIFF chunk
+            writeString('RIFF');
+            view.setUint32(offset, 36 + dataLength, true); offset += 4;
+            writeString('WAVE');
+
+            // fmt chunk
+            writeString('fmt ');
+            view.setUint32(offset, 16, true); offset += 4;
+            view.setUint16(offset, 1, true); offset += 2; // Audio format (1 = PCM)
+            view.setUint16(offset, numChannels, true); offset += 2;
+            view.setUint32(offset, sampleRate, true); offset += 4;
+            view.setUint32(offset, sampleRate * numChannels * bytesPerSample, true); offset += 4; // Byte rate
+            view.setUint16(offset, numChannels * bytesPerSample, true); offset += 2; // Block align
+            view.setUint16(offset, bitDepth, true); offset += 2; // Bit depth
+
+            // data chunk
+            writeString('data');
+            view.setUint32(offset, dataLength, true); offset += 4;
+
+            // Write PCM data
+            for (let i = 0; i < pcmData.length; i++) {
+                view.setInt16(offset, pcmData[i], true);
+                offset += 2;
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
 
         // Genera le barre dello spettro audio
         for(let i = 0; i < 20; i++) {
@@ -443,51 +552,21 @@
         
         const updateRiskMeter = () => {
             let color = '#4ade80';
+            let status = 'Stabile';
             if (currentRiskScore > 75) {
                 color = '#f87171'; // Red
+                status = 'Critico';
             } else if (currentRiskScore > 50) {
                 color = '#facc15'; // Yellow
+                status = 'Allerta';
+            } else if (currentRiskScore > 25) {
+                color = '#fb923c'; // Orange
+                status = 'Anomalia';
             }
             riskMeterEl.style.width = `${currentRiskScore}%`;
             riskMeterEl.style.backgroundColor = color;
-        };
-
-        const drawHeartRateChart = () => {
-            heartRateChartCanvas.width = heartRateChartCanvas.offsetWidth;
-            heartRateChartCanvas.height = heartRateChartCanvas.offsetHeight;
-            
-            ctx.clearRect(0, 0, heartRateChartCanvas.width, heartRateChartCanvas.height);
-            
-            if (heartRateData.length === 0) return;
-            
-            const padding = 10;
-            const width = heartRateChartCanvas.width - padding * 2;
-            const height = heartRateChartCanvas.height - padding * 2;
-            
-            const maxHR = Math.max(...heartRateData) + 10;
-            const minHR = Math.min(...heartRateData) - 10;
-            const rangeHR = maxHR - minHR;
-
-            ctx.beginPath();
-            ctx.moveTo(padding, padding + height - (heartRateData[0] - minHR) / rangeHR * height);
-            
-            for (let i = 1; i < heartRateData.length; i++) {
-                const x = padding + (i / maxDataPoints) * width;
-                const y = padding + height - (heartRateData[i] - minHR) / rangeHR * height;
-                ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            for (let i = 0; i < heartRateData.length; i++) {
-                const x = padding + (i / maxDataPoints) * width;
-                const y = padding + height - (heartRateData[i] - minHR) / rangeHR * height;
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            riskLevelTextEl.textContent = status;
+            riskLevelTextEl.className = `text-xl font-bold ${currentRiskScore > 75 ? 'text-red-500' : currentRiskScore > 50 ? 'text-yellow-500' : 'text-green-500'}`;
         };
 
         const updateSensors = () => {
@@ -499,7 +578,6 @@
             if (heartRateData.length > maxDataPoints) {
                 heartRateData.shift();
             }
-            drawHeartRateChart();
 
             const gyroData = ['Stabile', 'Leggero movimento', 'Rotazione lenta'];
             const gyroStatus = gyroData[Math.floor(Math.random() * gyroData.length)];
@@ -517,16 +595,16 @@
             currentRiskScore = Math.min(100, hrRisk + gyroRisk + noiseRisk);
             updateRiskMeter();
 
-            if (currentRiskScore > 75) {
+            if (currentRiskScore >= 75) {
                 logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio critico (${currentRiskScore}).`, 'danger');
             } else if (currentRiskScore > 50) {
                  logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio elevato (${currentRiskScore}).`, 'warning');
-            } else {
-                 logEvent('L\'IA ha rilevato una combinazione di dati normali.', 'info');
+            } else if (currentRiskScore > 25) {
+                 logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio moderato (${currentRiskScore}).`, 'warning');
             }
         };
 
-        const activateEmergencyMode = (source) => {
+        const activateEmergencyMode = async (source) => {
             if (isEmergency) return;
             isEmergency = true;
             emergencyScan = true;
@@ -543,7 +621,8 @@
             deviceStatusEl.className = 'flex items-center space-x-2 text-base text-red-500 font-semibold';
             
             logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e backup dati avviato.`, 'danger');
-            
+            await speak("Modalità emergenza attivata. Attivazione registrazione e backup dati in corso.", voiceNames.female);
+
             // Avvia la simulazione di registrazione e blockchain
             recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2 animate-pulse"></i> Registrazione in corso`;
             recordingStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
@@ -554,7 +633,7 @@
 
             blockchainContainerEl.innerHTML = '';
             
-            const blockchainStep = () => {
+            const blockchainStep = async () => {
                 if(dataBufferCount < 5) {
                     dataBufferEl.children[dataBufferCount].classList.remove('bg-gray-600');
                     dataBufferEl.children[dataBufferCount].classList.add('bg-blue-400', 'animate-pulse');
@@ -600,7 +679,7 @@
         const startCountdown = () => {
             let timeLeft = 30;
             emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
-            countdownInterval = setInterval(() => {
+            countdownInterval = setInterval(async () => {
                 timeLeft--;
                 emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
                 if (timeLeft <= 0) {
@@ -608,6 +687,7 @@
                     clearInterval(blockchainInterval);
                     logEvent('Backup di emergenza completo. Dati al sicuro e immutabili.', 'info');
                     emergencyCountdownEl.textContent = 'Completo';
+                    await speak("Backup di emergenza completo. I dati sono ora al sicuro.", voiceNames.female);
                     
                     recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2"></i> Backup completo`;
                     recordingStatusEl.className = 'text-xl font-bold text-green-500 flex items-center';
@@ -625,6 +705,7 @@
             clearInterval(sensorInterval);
             clearInterval(countdownInterval);
             clearInterval(blockchainInterval);
+            rightPanel.classList.remove('animate-pulse');
 
             manualActivateBtn.disabled = false;
             useCaseBtn.disabled = false;
@@ -654,7 +735,6 @@
             sensorInterval = setInterval(updateSensors, 1000);
             eventLogEl.innerHTML = '';
             heartRateData.length = 0;
-            drawHeartRateChart();
             currentRiskScore = 0;
             updateRiskMeter();
         };
@@ -663,27 +743,29 @@
             activateEmergencyMode('attivazione manuale');
         });
 
-        useCaseBtn.addEventListener('click', () => {
+        useCaseBtn.addEventListener('click', async () => {
             logEvent('ATTENZIONE: simulazione caso d\'uso Stalking in corso...', 'warning');
+            await speak("Analisi minaccia in corso. Si prega di mantenere la calma.", voiceNames.female);
             
-            // Simula un aumento del rischio
             let riskIncreaseInterval = setInterval(() => {
                 currentRiskScore = Math.min(100, currentRiskScore + 10);
                 updateRiskMeter();
             }, 300);
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 logEvent('L\'IA ha rilevato una serie di eventi anomali: GPS e giroscopio indicano un\'inversione di marcia inaspettata.', 'prediction');
                 gpsLocationEl.textContent = `Inseguimento...`;
                 gyroDataEl.textContent = `Movimento brusco`;
+                await speak("Movimento anomalo rilevato. Allerta innalzata.", voiceNames.female);
             }, 1500);
-            setTimeout(() => {
+            setTimeout(async () => {
                 heartRateEl.textContent = `135 BPM`;
                 noiseLevelEl.textContent = `Urla`;
                 logEvent('L\'AI ha analizzato il battito cardiaco elevato e il rumore per classificare la minaccia come CRITICA. Preparazione all\'attivazione.', 'danger');
                 clearInterval(riskIncreaseInterval);
                 currentRiskScore = 100;
                 updateRiskMeter();
+                await speak("Minaccia classificata come critica. Avvio della modalità di emergenza.", voiceNames.female);
             }, 3000);
             setTimeout(() => {
                 activateEmergencyMode('previsione IA');
