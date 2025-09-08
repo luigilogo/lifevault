@@ -3,140 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeVault - Simulazione</title>
+    <title>LifeVault - Simulazione Avanzata</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1a2b;
-            color: #e2e8f0;
+            background-color: #0c0f16;
+            transition: background-color 1s ease;
+            color: #d1d5db;
+        }
+        .container-bg {
+            background-color: #111827;
+            background-image: radial-gradient(at 50% 100%, #1f2937, #111827);
         }
         .card {
-            background-color: #1a273b;
-            border: 1px solid #2d3748;
+            background-color: #1f2937;
+            border: 1px solid #374151;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-        .glow {
-            animation: pulse-glow 2s infinite;
+        .status-pulse {
+            animation: pulse-ring 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
         }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 5px #4299e1, 0 0 10px #4299e1; }
-            50% { box-shadow: 0 0 10px #3182ce, 0 0 20px #3182ce; }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .emergency-mode {
+            background-color: #3b0707;
+            background-image: radial-gradient(at 50% 100%, #450a0a, #3b0707);
+        }
+        #mainContainer.emergency-mode .card {
+            border-color: #ef4444;
+        }
+        #mainContainer.emergency-mode #deviceStatus span {
+            color: #fca5a5;
+        }
+        #emergencyCountdown {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ef4444;
+            letter-spacing: -2px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-6">
+<body class="flex items-center justify-center min-h-screen p-8">
 
-<div class="bg-white shadow-2xl rounded-3xl p-8 max-w-4xl w-full mx-auto bg-gray-900 text-gray-200">
-    <div class="flex items-center justify-between mb-8">
-        <h1 class="text-4xl font-bold text-sky-400">LifeVault</h1>
-        <div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-500 font-semibold">
+<div id="mainContainer" class="container-bg shadow-2xl rounded-3xl p-10 max-w-5xl w-full mx-auto transition-all duration-1000">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-10">
+        <h1 class="text-5xl font-extrabold text-sky-400">LifeVault</h1>
+        <div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-400 font-semibold">
             <span class="relative flex h-3 w-3">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
             </span>
             <span>Stato: Attivo</span>
         </div>
     </div>
 
-    <p class="text-gray-400 mb-8 text-center text-lg">Simulazione del prototipo LifeVault con funzionalità avanzate.</p>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Dashboard Left Side -->
+        <div class="flex flex-col space-y-8">
+            <!-- Dati Biometrici Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-400 mr-2"></i> Dati in Tempo Reale
+                </h2>
+                <div class="grid grid-cols-2 gap-4 text-gray-300">
+                    <div>
+                        <div class="text-sm text-gray-400">Frequenza Cardiaca:</div>
+                        <div id="heartRate" class="text-3xl font-bold font-mono text-white">75 BPM</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400">Livello di Rumore:</div>
+                        <div id="noiseLevel" class="text-3xl font-bold font-mono text-white">Normale</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400">Giroscopio:</div>
+                        <div id="gyroData" class="text-xl font-mono text-white">Stabile</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400">Posizione GPS:</div>
+                        <div id="gpsLocation" class="text-lg font-mono text-gray-300">41.89° N, 12.51° E</div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Sensor Data Panel -->
-        <div class="card rounded-2xl p-6">
-            <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                <i class="fas fa-heartbeat text-red-500 mr-2"></i> Dati Biometrici
-            </h2>
-            <div class="space-y-4 text-gray-300">
-                <div>
-                    <div class="text-sm">Frequenza Cardiaca:</div>
-                    <div id="heartRate" class="text-2xl font-bold font-mono text-white">75 BPM</div>
+            <!-- LiDAR Scan Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-cube text-purple-400 mr-2"></i> Scansione LiDAR
+                </h2>
+                <div class="bg-gray-900 rounded-lg p-2 flex items-center justify-center">
+                    <canvas id="lidarCanvas" class="w-full h-48"></canvas>
                 </div>
-                <div>
-                    <div class="text-sm">Giroscopio:</div>
-                    <div id="gyroData" class="text-xl font-mono text-white">Stabile</div>
-                </div>
-                <div>
-                    <div class="text-sm">Livello di rumore:</div>
-                    <div id="noiseLevel" class="text-xl font-mono text-white">Normale</div>
-                </div>
+            </div>
+
+            <!-- Controls and Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Attivazione Manuale
+                </button>
+                <button id="threatBtn" class="bg-yellow-500 text-gray-900 font-bold py-4 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-skull-crossbones mr-2"></i> Simula Minaccia
+                </button>
+                <button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-undo mr-2"></i> Ripristina
+                </button>
             </div>
         </div>
 
-        <!-- Security and Status Panel -->
-        <div class="card rounded-2xl p-6">
-            <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                <i class="fas fa-shield-alt text-green-500 mr-2"></i> Sicurezza
-            </h2>
-            <div class="space-y-4 text-gray-300">
-                <div>
-                    <div class="text-sm">Crittografia:</div>
-                    <div id="encryptionStatus" class="text-xl font-bold text-green-500 flex items-center">
-                        <i class="fas fa-lock mr-2"></i> Attiva (<span class="font-mono">RSA-4096</span>)
+        <!-- Dashboard Right Side -->
+        <div class="flex flex-col space-y-8">
+            <!-- Security and AI Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-shield-alt text-green-500 mr-2"></i> Sicurezza e IA
+                </h2>
+                <div class="space-y-4 text-gray-300">
+                    <div>
+                        <div class="text-sm text-gray-400">Crittografia:</div>
+                        <div id="encryptionStatus" class="text-xl font-bold text-green-500 flex items-center">
+                            <i class="fas fa-lock mr-2"></i> Attiva (<span class="font-mono">AES-256</span>)
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="text-sm">Stato Blockchain:</div>
-                    <div id="blockchainStatus" class="text-xl font-bold text-green-500 flex items-center">
-                        <i class="fas fa-link mr-2"></i> Sincronizzata
+                    <div>
+                        <div class="text-sm text-gray-400">Stato Blockchain:</div>
+                        <div id="blockchainStatus" class="text-xl font-bold text-green-500 flex items-center">
+                            <i class="fas fa-link mr-2"></i> Sincronizzata
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="text-sm">Attivazione IA:</div>
-                    <div id="aiStatus" class="text-xl font-bold text-sky-400 flex items-center">
-                        <i class="fas fa-brain mr-2"></i> In ascolto...
+                    <div>
+                        <div class="text-sm text-gray-400">Attivazione IA:</div>
+                        <div id="aiStatus" class="text-xl font-bold text-sky-400 flex items-center">
+                            <i class="fas fa-brain mr-2"></i> In ascolto...
+                        </div>
+                    </div>
+                    <div id="emergencyCounterSection" class="hidden">
+                        <div class="text-sm text-gray-400">Tempo al Backup Completo:</div>
+                        <div id="emergencyCountdown"></div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Location Panel -->
-        <div class="card rounded-2xl p-6">
-            <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i> Posizione
-            </h2>
-            <div id="gpsMap" class="w-full h-32 rounded-lg bg-gray-800 flex items-center justify-center text-gray-500">
-                <!-- Simulazione Mappa -->
-                <div class="text-center">
-                    <i class="fas fa-map-marked-alt text-5xl mb-2"></i>
-                    <p>Mappa GPS</p>
+            <!-- Event Log Panel -->
+            <div class="card rounded-2xl p-6 flex-grow">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
+                <div id="eventLog" class="bg-gray-900 p-4 rounded-lg border border-gray-700 h-64 overflow-y-scroll text-sm font-mono text-gray-400">
+                    <div class="text-gray-500">In attesa di eventi...</div>
                 </div>
-            </div>
-            <div class="mt-4">
-                <div class="text-sm text-gray-300">Coordinate:</div>
-                <div id="gpsLocation" class="text-lg font-mono text-white">41.8919° N, 12.5113° E (Roma)</div>
             </div>
         </div>
     </div>
 
-    <!-- Controls and Actions -->
-    <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-6 mb-8">
-        <button id="manualActivateBtn" class="w-full md:w-auto bg-red-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Attivazione Manuale
-        </button>
-        <button id="threatBtn" class="w-full md:w-auto bg-yellow-500 text-gray-900 font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-            <i class="fas fa-skull-crossbones mr-2"></i> Simula Minaccia
-        </button>
-        <button id="resetBtn" class="w-full md:w-auto bg-gray-700 text-gray-300 font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-            <i class="fas fa-undo mr-2"></i> Ripristina Stato
-        </button>
-    </div>
-
-    <!-- Event Log Panel -->
-    <div class="card rounded-2xl p-6">
-        <h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
-        <div id="eventLog" class="bg-gray-800 p-4 rounded-lg border border-gray-700 h-48 overflow-y-scroll text-sm font-mono text-gray-400">
-            <div class="text-gray-500">In attesa di eventi...</div>
-        </div>
-    </div>
 </div>
 
 <script>
@@ -146,31 +179,80 @@
         const gyroDataEl = document.getElementById('gyroData');
         const noiseLevelEl = document.getElementById('noiseLevel');
         const aiStatusEl = document.getElementById('aiStatus');
-        const encryptionStatusEl = document.getElementById('encryptionStatus');
         const manualActivateBtn = document.getElementById('manualActivateBtn');
         const threatBtn = document.getElementById('threatBtn');
         const resetBtn = document.getElementById('resetBtn');
         const eventLogEl = document.getElementById('eventLog');
         const deviceStatusEl = document.getElementById('deviceStatus');
+        const mainContainerEl = document.getElementById('mainContainer');
+        const emergencyCountdownEl = document.getElementById('emergencyCountdown');
+        const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
 
+        const lidarCanvas = document.getElementById('lidarCanvas');
+        const ctx = lidarCanvas.getContext('2d');
+        const lidarPoints = [];
         let isEmergency = false;
         let sensorInterval;
-        let eventCount = 0;
+        let countdownInterval;
 
         const logEvent = (message, type = 'info') => {
             const timestamp = new Date().toLocaleTimeString();
             const logEntry = document.createElement('div');
-            logEntry.className = `p-2 my-1 rounded-lg ${type === 'danger' ? 'bg-red-900/40 text-red-300 border border-red-700' : 'bg-green-900/40 text-green-300 border border-green-700'}`;
-            logEntry.innerHTML = `<span class="font-bold">[${timestamp}]</span> ${message}`;
+            let iconClass = '';
+            if (type === 'danger') {
+                iconClass = 'fas fa-exclamation-circle text-red-500 mr-2';
+                logEntry.className = 'p-3 my-2 rounded-lg bg-red-900/40 text-red-200 border border-red-700';
+            } else if (type === 'warning') {
+                iconClass = 'fas fa-bell text-yellow-500 mr-2';
+                logEntry.className = 'p-3 my-2 rounded-lg bg-yellow-900/40 text-yellow-200 border border-yellow-700';
+            } else {
+                iconClass = 'fas fa-info-circle text-green-500 mr-2';
+                logEntry.className = 'p-3 my-2 rounded-lg bg-green-900/40 text-green-200 border border-green-700';
+            }
+            logEntry.innerHTML = `<span class="font-bold">[${timestamp}]</span> <i class="${iconClass}"></i> ${message}`;
             eventLogEl.prepend(logEntry);
-            if (eventLogEl.children.length > 20) {
-                eventLogEl.removeChild(eventLogEl.lastChild);
+        };
+
+        const generateLidarPoints = (numPoints, zOffset) => {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 50 + 10;
+                points.push({
+                    x: Math.cos(angle) * radius,
+                    y: Math.sin(angle) * radius,
+                    z: Math.random() * 50 + zOffset
+                });
+            }
+            return points;
+        };
+        
+        const drawLidar = () => {
+            const centerX = lidarCanvas.width / 2;
+            const centerY = lidarCanvas.height / 2;
+            ctx.clearRect(0, 0, lidarCanvas.width, lidarCanvas.height);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, lidarCanvas.width, lidarCanvas.height);
+            lidarPoints.forEach(p => {
+                const x = centerX + p.x * 2;
+                const y = centerY + p.y * 2;
+                const size = 2 - (p.z / 100);
+                const alpha = 1 - (p.z / 100);
+                ctx.fillStyle = `rgba(147, 197, 253, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            lidarPoints.forEach(p => p.z -= 0.5); // Simula il movimento
+            if (lidarPoints.every(p => p.z < 0)) {
+                lidarPoints.length = 0; // Reset dei punti quando escono dalla vista
             }
         };
 
         const updateSensors = () => {
-            // Simulazione di dati casuali per i sensori
-            const heartRate = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
+            if (isEmergency) return;
+            // Simulazione di dati casuali
+            const heartRate = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
             heartRateEl.textContent = `${heartRate} BPM`;
 
             const gyroData = ['Stabile', 'Leggero movimento'];
@@ -181,40 +263,68 @@
             const noiseStatus = noiseLevel[Math.floor(Math.random() * noiseLevel.length)];
             noiseLevelEl.textContent = noiseStatus;
 
-            // Logica di IA migliorata per attivazione automatica (simulata)
-            if ((heartRate > 110) || gyroStatus === 'Caduta improvvisa' || noiseStatus === 'Urla') {
-                if (!isEmergency) {
-                    isEmergency = true;
-                    activateEmergencyMode('attivazione IA');
-                }
+            // Simula l'attivazione dell'IA
+            if (heartRate > 85) {
+                logEvent('L\'IA ha rilevato un battito cardiaco elevato. Monitoraggio intensivo...', 'warning');
             }
         };
 
         const activateEmergencyMode = (source) => {
+            if (isEmergency) return;
             isEmergency = true;
             clearInterval(sensorInterval);
             manualActivateBtn.disabled = true;
             threatBtn.disabled = true;
+            resetBtn.style.display = 'none';
+
+            mainContainerEl.classList.add('emergency-mode');
+            
             aiStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 animate-pulse"></i> Emergenza Rilevata!`;
             aiStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
-            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span><span>Stato: EMERGENZA</span>`;
+            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span><span>Stato: EMERGENZA</span>`;
             deviceStatusEl.className = 'flex items-center space-x-2 text-base text-red-500 font-semibold';
             
-            logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e dati inviati al backup sicuro.`, 'danger');
+            logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e backup dati avviato.`, 'danger');
+
+            emergencyCounterSectionEl.classList.remove('hidden');
+            startCountdown();
+        };
+
+        const startCountdown = () => {
+            let timeLeft = 30;
+            emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    logEvent('Backup di emergenza completo. Dati al sicuro e immutabili.', 'info');
+                    emergencyCountdownEl.textContent = 'Completo';
+                }
+            }, 1000);
         };
 
         const resetDevice = () => {
             isEmergency = false;
+            clearInterval(sensorInterval);
+            clearInterval(countdownInterval);
+
             manualActivateBtn.disabled = false;
             threatBtn.disabled = false;
+            resetBtn.style.display = 'block';
+
+            mainContainerEl.classList.remove('emergency-mode');
+            
             aiStatusEl.innerHTML = `<i class="fas fa-brain mr-2"></i> In ascolto...`;
             aiStatusEl.className = 'text-xl font-bold text-sky-400 flex items-center';
-            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
-            deviceStatusEl.className = 'flex items-center space-x-2 text-base text-green-500 font-semibold';
-
+            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
+            deviceStatusEl.className = 'flex items-center space-x-2 text-base text-green-400 font-semibold';
+            
+            emergencyCounterSectionEl.classList.add('hidden');
+            
             logEvent('Dispositivo ripristinato. Monitoraggio normale.', 'info');
-            if (sensorInterval) clearInterval(sensorInterval);
             sensorInterval = setInterval(updateSensors, 1000);
+            eventLogEl.innerHTML = '';
         };
 
         manualActivateBtn.addEventListener('click', () => {
@@ -222,20 +332,29 @@
         });
 
         threatBtn.addEventListener('click', () => {
-            // Simula una minaccia forzando i dati dei sensori
-            const heartRate = 125;
-            const gyroStatus = 'Caduta improvvisa';
-            const noiseStatus = 'Urla';
-            heartRateEl.textContent = `${heartRate} BPM`;
-            gyroDataEl.textContent = gyroStatus;
-            noiseLevelEl.textContent = noiseStatus;
-
-            activateEmergencyMode('simulazione minaccia');
+            // Sequenza narrativa: dati anomali che portano all'attivazione
+            logEvent('ATTENZIONE: simulazione minaccia in corso...', 'warning');
+            setTimeout(() => {
+                heartRateEl.textContent = `135 BPM`;
+                noiseLevelEl.textContent = `Urla`;
+                logEvent('L\'IA rileva una grave anomalia: battito cardiaco e rumore elevati. Valutazione della minaccia...', 'warning');
+            }, 1000);
+            setTimeout(() => {
+                activateEmergencyMode('simulazione minaccia');
+            }, 3000);
         });
 
         resetBtn.addEventListener('click', () => {
             resetDevice();
         });
+
+        // Inizializza il canvas LiDAR
+        lidarCanvas.width = lidarCanvas.offsetWidth;
+        lidarCanvas.height = lidarCanvas.offsetHeight;
+        setInterval(() => {
+            lidarPoints.push(...generateLidarPoints(20, 50));
+        }, 500);
+        setInterval(drawLidar, 1000 / 30); // 30 FPS
 
         // Inizializza la simulazione
         resetDevice();
