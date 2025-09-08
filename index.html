@@ -80,6 +80,17 @@
             background-color: #3b82f6;
             transition: all 0.5s ease-in-out;
         }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-8">
@@ -182,7 +193,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Recording & Blockchain Panel -->
             <div class="card rounded-2xl p-6">
                 <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
@@ -211,6 +222,21 @@
                         <div class="text-sm text-gray-400">Tempo al Backup Completo:</div>
                         <div id="emergencyCountdown"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Forensic Photo Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-camera text-sky-400 mr-2"></i> Istantanea Forense
+                </h2>
+                <div id="imagePanel" class="flex items-center justify-center bg-gray-900 rounded-lg p-4 h-64 w-full">
+                    <span id="imagePlaceholder" class="text-gray-500">Nessuna immagine catturata.</span>
+                    <div id="imageLoading" class="hidden">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-2 text-sm text-gray-400">Cattura in corso...</p>
+                    </div>
+                    <img id="capturedImage" class="hidden rounded-lg w-full h-full object-cover" alt="Captured forensic image">
                 </div>
             </div>
             
@@ -370,6 +396,10 @@
         const dataBufferStatusEl = document.getElementById('dataBufferStatus');
         const blockchainContainerEl = document.getElementById('blockchainContainer');
         const rightPanelEl = document.getElementById('rightPanel');
+        const imagePanelEl = document.getElementById('imagePanel');
+        const imagePlaceholderEl = document.getElementById('imagePlaceholder');
+        const imageLoadingEl = document.getElementById('imageLoading');
+        const capturedImageEl = document.getElementById('capturedImage');
 
         let isEmergency = false;
         let sensorInterval;
@@ -604,6 +634,51 @@
             }
         };
 
+        const generateEmergencyImage = async () => {
+            imagePlaceholderEl.classList.add('hidden');
+            capturedImageEl.classList.add('hidden');
+            imageLoadingEl.classList.remove('hidden');
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: "A sharp, clear, and high-quality photo of a person in a state of distress, with a neutral background, as if captured by a small wearable device." }]
+                }],
+                generationConfig: {
+                    responseModalities: ['TEXT', 'IMAGE']
+                },
+            };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                if (base64Data) {
+                    const imageUrl = `data:image/png;base64,${base64Data}`;
+                    capturedImageEl.src = imageUrl;
+                    capturedImageEl.classList.remove('hidden');
+                    logEvent('Istantanea forense creata con successo.', 'info');
+                } else {
+                    imagePlaceholderEl.textContent = 'Errore durante la generazione dell\'immagine.';
+                    imagePlaceholderEl.classList.remove('hidden');
+                    logEvent('Errore nella generazione dell\'immagine.', 'danger');
+                }
+            } catch (error) {
+                console.error("Errore nella chiamata all'API:", error);
+                imagePlaceholderEl.textContent = 'Errore di rete o API.';
+                imagePlaceholderEl.classList.remove('hidden');
+                logEvent('Errore di rete durante la generazione dell\'immagine.', 'danger');
+            } finally {
+                imageLoadingEl.classList.add('hidden');
+            }
+        };
+
         const activateEmergencyMode = async (source) => {
             if (isEmergency) return;
             isEmergency = true;
@@ -737,9 +812,15 @@
             heartRateData.length = 0;
             currentRiskScore = 0;
             updateRiskMeter();
+
+            imagePlaceholderEl.textContent = 'Nessuna immagine catturata.';
+            imagePlaceholderEl.classList.remove('hidden');
+            capturedImageEl.classList.add('hidden');
+            imageLoadingEl.classList.add('hidden');
         };
 
         manualActivateBtn.addEventListener('click', () => {
+            generateEmergencyImage();
             activateEmergencyMode('attivazione manuale');
         });
 
