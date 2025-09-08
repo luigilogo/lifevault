@@ -1,704 +1,689 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeVault - Simulazione Avanzata</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0c0f16;
-            transition: background-color 1s ease;
-            color: #d1d5db;
-        }
-        .container-bg {
-            background-color: #111827;
-            background-image: radial-gradient(at 50% 100%, #1f2937, #111827);
-        }
-        .card {
-            background-color: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        .status-pulse {
-            animation: pulse-ring 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        .emergency-mode-bg {
-            background-color: #3b0707;
-            background-image: radial-gradient(at 50% 100%, #450a0a, #3b0707);
-        }
-        #mainContainer.emergency-mode-bg .card {
-            border-color: #ef4444;
-        }
-        #mainContainer.emergency-mode-bg #deviceStatus span {
-            color: #fca5a5;
-        }
-        #emergencyCountdown {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #ef4444;
-            letter-spacing: -2px;
-            animation: blink 1s infinite;
-        }
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .risk-meter-bg {
-            background-color: #2d3748;
-        }
-        .risk-meter-fill {
-            transition: width 0.5s ease-in-out;
-        }
-        .audio-bar {
-            height: 100%;
-            background-color: #4ade80;
-            width: 4px;
-            margin: 0 1px;
-            border-radius: 2px;
-            animation: audio-pulse 0.5s infinite;
-        }
-        @keyframes audio-pulse {
-            0%, 100% { transform: scaleY(0.1); }
-            50% { transform: scaleY(1); }
-        }
-        .blockchain-block {
-            background-color: #3b82f6;
-            transition: all 0.5s ease-in-out;
-        }
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #3498db;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeVault - Simulazione Avanzata</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+body {
+font-family: 'Inter', sans-serif;
+background-color: #0c0f16;
+transition: background-color 1s ease;
+color: #d1d5db;
+}
+.container-bg {
+background-color: #111827;
+background-image: radial-gradient(at 50% 100%, #1f2937, #111827);
+}
+.card {
+background-color: #1f2937;
+border: 1px solid #374151;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+transform: translateY(-5px);
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+.status-pulse {
+animation: pulse-ring 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+@keyframes pulse-ring {
+0% { transform: scale(0.3); opacity: 0; }
+50% { transform: scale(1); opacity: 0.5; }
+100% { transform: scale(1.5); opacity: 0; }
+}
+.emergency-mode-bg {
+background-color: #3b0707;
+background-image: radial-gradient(at 50% 100%, #450a0a, #3b0707);
+}
+#mainContainer.emergency-mode-bg .card {
+border-color: #ef4444;
+}
+#mainContainer.emergency-mode-bg #deviceStatus span {
+color: #fca5a5;
+}
+#emergencyCountdown {
+font-size: 3rem;
+font-weight: 800;
+color: #ef4444;
+letter-spacing: -2px;
+animation: blink 1s infinite;
+}
+@keyframes blink {
+50% { opacity: 0; }
+}
+.risk-meter-bg {
+background-color: #2d3748;
+}
+.risk-meter-fill {
+transition: width 0.5s ease-in-out;
+}
+.audio-bar {
+height: 100%;
+background-color: #4ade80;
+width: 4px;
+margin: 0 1px;
+border-radius: 2px;
+animation: audio-pulse 0.5s infinite;
+}
+@keyframes audio-pulse {
+0%, 100% { transform: scaleY(0.1); }
+50% { transform: scaleY(1); }
+}
+.blockchain-block {
+background-color: #3b82f6;
+transition: all 0.5s ease-in-out;
+}
+.loading-spinner {
+border: 4px solid rgba(255, 255, 255, 0.3);
+border-radius: 50%;
+border-top-color: #3498db;
+width: 40px;
+height: 40px;
+animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+</style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-8">
 <div id="mainContainer" class="container-bg shadow-2xl rounded-3xl p-10 max-w-5xl w-full mx-auto transition-all duration-1000">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-center justify-between mb-10">
-        <h1 class="text-5xl font-extrabold text-sky-400 mb-4 sm:mb-0">LifeVault</h1>
-        <div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-400 font-semibold">
-            <span class="relative flex h-3 w-3">
-                <span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span>Stato: Attivo</span>
-        </div>
-    </div>
-    <!-- Buttons -->
-    <div class="flex flex-col sm:flex-row items-center justify-center mb-10 space-y-4 sm:space-y-0 sm:space-x-4">
-        <button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-sm">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Attiva
-        </button>
-        <button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 text-sm">
-            <i class="fas fa-undo mr-2"></i> Ripristina
-        </button>
-    </div>
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <!-- Dashboard Left Side -->
-        <div class="flex flex-col space-y-8">
-            <!-- Dati Biometrici Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-chart-line text-blue-400 mr-2"></i> Dati in Tempo Reale
-                </h2>
-                <div class="grid grid-cols-2 gap-4 text-gray-300">
-                    <div>
-                        <div class="text-sm text-gray-400">Frequenza Cardiaca:</div>
-                        <div id="heartRate" class="text-3xl font-bold font-mono text-white">75 BPM</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Livello di Rumore:</div>
-                        <div id="noiseLevel" class="text-3xl font-bold font-mono text-white">Normale</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Giroscopio:</div>
-                        <div id="gyroData" class="text-xl font-mono text-white">Stabile</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Posizione GPS:</div>
-                        <div id="gpsLocation" class="text-lg font-mono text-gray-300">41.89° N, 12.51° E</div>
-                    </div>
-                </div>
-            </div>
-            <!-- LiDAR Scan Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-cube text-purple-400 mr-2"></i> Scansione LiDAR Avanzata
-                </h2>
-                <div id="lidarCanvasContainer" class="bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden h-96">
-                    <canvas id="lidarCanvas" class="w-full h-full"></canvas>
-                    <i id="userIcon" class="fas fa-user-circle text-gray-400 absolute text-4xl hidden z-10"></i>
-                </div>
-            </div>
-        </div>
-        <!-- Dashboard Right Side -->
-        <div id="rightPanel" class="flex flex-col space-y-8">
-            <!-- Security and AI Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-shield-alt text-green-500 mr-2"></i> Sicurezza e IA
-                </h2>
-                <div class="space-y-4 text-gray-300">
-                    <div>
-                        <div class="text-sm text-gray-400">Stato Crittografia:</div>
-                        <div id="encryptionStatus" class="text-xl font-bold text-green-500 flex items-center">
-                            <i class="fas fa-lock mr-2"></i> Attiva (<span class="font-mono">AES-256</span>)
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Livello di Rischio:</div>
-                        <div id="riskLevelText" class="text-xl font-bold text-gray-400">Stabile</div>
-                        <div class="w-full bg-gray-700 rounded-full h-4 relative mt-2 risk-meter-bg">
-                            <div id="riskMeter" class="h-4 rounded-full risk-meter-fill" style="width: 0%; background-color: #4ade80;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Attivazione IA:</div>
-                        <div id="aiStatus" class="text-xl font-bold text-sky-400 flex items-center">
-                            <i class="fas fa-brain mr-2"></i> In ascolto...
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Recording & Blockchain Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-video text-gray-400 mr-2"></i> Registrazione & Blockchain
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <div class="text-sm text-gray-400">Stato Registrazione:</div>
-                        <div id="recordingStatus" class="text-xl font-bold flex items-center text-gray-400">
-                            <i class="fas fa-circle mr-2 text-gray-500"></i> In standby
-                        </div>
-                        <div id="audioVisualizer" class="flex items-end justify-center h-16 bg-gray-900 rounded-lg p-2 hidden"></div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Stato Backup Dati:</div>
-                        <div id="dataBufferStatus" class="text-xl font-bold flex items-center text-gray-400">
-                            <i class="fas fa-hdd mr-2"></i> Buffer vuoto
-                        </div>
-                        <div id="dataBuffer" class="flex mt-2"></div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Blockchain:</div>
-                        <div id="blockchainContainer" class="flex items-center overflow-x-hidden p-2"></div>
-                    </div>
-                    <div id="emergencyCounterSection" class="hidden text-center">
-                        <div class="text-sm text-gray-400">Tempo al Backup Completo:</div>
-                        <div id="emergencyCountdown"></div>
-                    </div>
-                </div>
-            </div>
-            <!-- Forensic Photo Panel -->
-            <div class="card rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
-                    <i class="fas fa-camera text-sky-400 mr-2"></i> Istantanea Forense
-                </h2>
-                <div id="imagePanel" class="flex items-center justify-center bg-gray-900 rounded-lg p-4 h-64 w-full">
-                    <span id="imagePlaceholder" class="text-gray-500">Nessuna immagine catturata.</span>
-                    <div id="imageLoading" class="hidden">
-                        <div class="loading-spinner"></div>
-                        <p class="mt-2 text-sm text-gray-400">Cattura in corso...</p>
-                    </div>
-                    <img id="capturedImage" class="hidden rounded-lg w-full h-full object-cover" alt="Captured forensic image">
-                </div>
-            </div>
-            
-            <!-- Event Log Panel -->
-            <div class="card rounded-2xl p-6 flex-grow">
-                <h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
-                <div id="eventLog" class="bg-gray-900 p-4 rounded-lg border border-gray-700 h-64 overflow-y-scroll text-sm font-mono text-gray-400">
-                    <div class="text-gray-500">In attesa di eventi...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="flex flex-col sm:flex-row items-center justify-between mb-10">
+<h1 class="text-5xl font-extrabold text-sky-400 mb-4 sm:mb-0">LifeVault</h1>
+<div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-400 font-semibold">
+<span class="relative flex h-3 w-3">
+<span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+</span>
+<span>Stato: Attivo</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-center mb-10 space-y-4 sm:space-y-0 sm:space-x-4">
+<button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-sm">
+<i class="fas fa-exclamation-triangle mr-2"></i> Attiva
+</button>
+<button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 text-sm">
+<i class="fas fa-undo mr-2"></i> Ripristina
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+<div class="flex flex-col space-y-8">
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+<i class="fas fa-chart-line text-blue-400 mr-2"></i> Dati in Tempo Reale
+</h2>
+<div class="grid grid-cols-2 gap-4 text-gray-300">
+<div>
+<div class="text-sm text-gray-400">Frequenza Cardiaca:</div>
+<div id="heartRate" class="text-3xl font-bold font-mono text-white">75 BPM</div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Livello di Rumore:</div>
+<div id="noiseLevel" class="text-3xl font-bold font-mono text-white">Normale</div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Giroscopio:</div>
+<div id="gyroData" class="text-xl font-mono text-white">Stabile</div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Posizione GPS:</div>
+<div id="gpsLocation" class="text-lg font-mono text-gray-300">41.89° N, 12.51° E</div>
+</div>
+</div>
+</div>
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+<i class="fas fa-cube text-purple-400 mr-2"></i> Scansione LiDAR Avanzata
+</h2>
+<div id="lidarCanvasContainer" class="bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden h-96">
+<canvas id="lidarCanvas" class="w-full h-full"></canvas>
+<i id="userIcon" class="fas fa-user-circle text-gray-400 absolute text-4xl hidden z-10"></i>
+</div>
+</div>
+</div>
+<div id="rightPanel" class="flex flex-col space-y-8">
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+<i class="fas fa-shield-alt text-green-500 mr-2"></i> Sicurezza e IA
+</h2>
+<div class="space-y-4 text-gray-300">
+<div>
+<div class="text-sm text-gray-400">Stato Crittografia:</div>
+<div id="encryptionStatus" class="text-xl font-bold text-green-500 flex items-center">
+<i class="fas fa-lock mr-2"></i> Attiva (<span class="font-mono">AES-256</span>)
+</div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Livello di Rischio:</div>
+<div id="riskLevelText" class="text-xl font-bold text-gray-400">Stabile</div>
+<div class="w-full bg-gray-700 rounded-full h-4 relative mt-2 risk-meter-bg">
+<div id="riskMeter" class="h-4 rounded-full risk-meter-fill" style="width: 0%; background-color: #4ade80;"></div>
+</div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Attivazione IA:</div>
+<div id="aiStatus" class="text-xl font-bold text-sky-400 flex items-center">
+<i class="fas fa-brain mr-2"></i> In ascolto...
+</div>
+</div>
+</div>
+</div>
+
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+<i class="fas fa-video text-gray-400 mr-2"></i> Registrazione & Blockchain
+</h2>
+<div class="space-y-4">
+<div>
+<div class="text-sm text-gray-400">Stato Registrazione:</div>
+<div id="recordingStatus" class="text-xl font-bold flex items-center text-gray-400">
+<i class="fas fa-circle mr-2 text-gray-500"></i> In standby
+</div>
+<div id="audioVisualizer" class="flex items-end justify-center h-16 bg-gray-900 rounded-lg p-2 hidden"></div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Stato Backup Dati:</div>
+<div id="dataBufferStatus" class="text-xl font-bold flex items-center text-gray-400">
+<i class="fas fa-hdd mr-2"></i> Buffer vuoto
+</div>
+<div id="dataBuffer" class="flex mt-2"></div>
+</div>
+<div>
+<div class="text-sm text-gray-400">Blockchain:</div>
+<div id="blockchainContainer" class="flex items-center overflow-x-hidden p-2"></div>
+</div>
+<div id="emergencyCounterSection" class="hidden text-center">
+<div class="text-sm text-gray-400">Tempo al Backup Completo:</div>
+<div id="emergencyCountdown"></div>
+</div>
+</div>
+</div>
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+<i class="fas fa-camera text-sky-400 mr-2"></i> Istantanea Forense
+</h2>
+<div id="imagePanel" class="flex items-center justify-center bg-gray-900 rounded-lg p-4 h-64 w-full">
+<span id="imagePlaceholder" class="text-gray-500">Nessuna immagine catturata.</span>
+<div id="imageLoading" class="hidden">
+<div class="loading-spinner"></div>
+<p class="mt-2 text-sm text-gray-400">Cattura in corso...</p>
+</div>
+<img id="capturedImage" class="hidden rounded-lg w-full h-full object-cover" alt="Captured forensic image">
+</div>
+</div>
+</div>
+</div>
+
+<div class="card rounded-2xl p-6">
+<h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
+<div id="eventLog" class="bg-gray-900 p-4 rounded-lg border border-gray-700 h-64 overflow-y-scroll text-sm font-mono text-gray-400">
+<div class="text-gray-500">In attesa di eventi...</div>
+</div>
+</div>
+
 </div>
 <script>
-    let scene, camera, renderer, objects = [], controls;
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
-    const maxObjects = 500;
-    const objectSize = 0.5;
-    const roomSize = 25;
-    let scanLine;
-    let emergencyScan = false;
-    let userIcon;
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const voiceNames = {
-        'male': "Kore",
-        'female': "Leda"
-    };
+let scene, camera, renderer, objects = [], controls;
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+const maxObjects = 500;
+const objectSize = 0.5;
+const roomSize = 25;
+let scanLine;
+let emergencyScan = false;
+let userIcon;
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const voiceNames = {
+'male': "Kore",
+'female': "Leda"
+};
+function init() {
+const container = document.getElementById('lidarCanvasContainer');
+const canvas = document.getElementById('lidarCanvas');
+userIcon = document.getElementById('userIcon');
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111827);
+camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+camera.position.z = roomSize * 1.5;
+renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
+renderer.setSize(container.offsetWidth, container.offsetHeight);
+const light = new THREE.AmbientLight(0x404040);
+scene.add(light);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(1, 1, 1);
+scene.add(directionalLight);
+function generateLidarPoints() {
+const geometry = new THREE.BoxGeometry(objectSize, objectSize, objectSize);
+const material = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
+for (let i = 0; i < maxObjects; i++) {
+const cube = new THREE.Mesh(geometry, material);
+cube.position.x = (Math.random() - 0.5) * roomSize;
+cube.position.y = (Math.random() - 0.5) * roomSize;
+cube.position.z = (Math.random() - 0.5) * roomSize;
+scene.add(cube);
+objects.push(cube);
+}
+}
+generateLidarPoints();
+userIcon.style.display = 'block';
+const geometry = new THREE.CylinderGeometry(roomSize / 2, roomSize / 2, 0.1, 32);
+const material = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.2 });
+scanLine = new THREE.Mesh(geometry, material);
+scanLine.rotation.x = Math.PI / 2;
+scene.add(scanLine);
+window.addEventListener('resize', () => {
+const width = container.offsetWidth;
+const height = container.offsetHeight;
+renderer.setSize(width, height);
+camera.aspect = width / height;
+camera.updateProjectionMatrix();
+});
+canvas.addEventListener('mousedown', (e) => {
+isDragging = true;
+previousMousePosition.x = e.clientX;
+previousMousePosition.y = e.clientY;
+});
+canvas.addEventListener('mouseup', () => {
+isDragging = false;
+});
+canvas.addEventListener('mousemove', (e) => {
+if (!isDragging) return;
+const deltaX = e.clientX - previousMousePosition.x;
+const deltaY = e.clientY - previousMousePosition.y;
+scene.rotation.y += deltaX * 0.005;
+scene.rotation.x += deltaY * 0.005;
+previousMousePosition.x = e.clientX;
+previousMousePosition.y = e.clientY;
+});
+}
+function animate() {
+requestAnimationFrame(animate);
+scanLine.rotation.z += 0.01;
+if(emergencyScan) {
+scanLine.material.color.setHex(0xef4444);
+} else {
+scanLine.material.color.setHex(0x4ade80);
+}
+if (emergencyScan) {
+objects.forEach(obj => {
+obj.position.x += (Math.random() - 0.5) * 0.02;
+obj.position.y += (Math.random() - 0.5) * 0.02;
+obj.position.z += (Math.random() - 0.5) * 0.02;
+});
+}
+renderer.render(scene, camera);
+}
+window.onload = function () {
+init();
+animate();
+};
+document.addEventListener('DOMContentLoaded', () => {
+const heartRateEl = document.getElementById('heartRate');
+const gpsLocationEl = document.getElementById('gpsLocation');
+const gyroDataEl = document.getElementById('gyroData');
+const noiseLevelEl = document.getElementById('noiseLevel');
+const aiStatusEl = document.getElementById('aiStatus');
+const manualActivateBtn = document.getElementById('manualActivateBtn');
+const resetBtn = document.getElementById('resetBtn');
+const eventLogEl = document.getElementById('eventLog');
+const deviceStatusEl = document.getElementById('deviceStatus');
+const mainContainerEl = document.getElementById('mainContainer');
+const emergencyCountdownEl = document.getElementById('emergencyCountdown');
+const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
+const recordingStatusEl = document.getElementById('recordingStatus');
+const riskMeterEl = document.getElementById('riskMeter');
+const riskLevelTextEl = document.getElementById('riskLevelText');
+const audioVisualizerEl = document.getElementById('audioVisualizer');
+const dataBufferEl = document.getElementById('dataBuffer');
+const dataBufferStatusEl = document.getElementById('dataBufferStatus');
+const blockchainContainerEl = document.getElementById('blockchainContainer');
+const rightPanelEl = document.getElementById('rightPanel');
+const imagePanelEl = document.getElementById('imagePanel');
+const imagePlaceholderEl = document.getElementById('imagePlaceholder');
+const imageLoadingEl = document.getElementById('imageLoading');
+const capturedImageEl = document.getElementById('capturedImage');
+let isEmergency = false;
+let sensorInterval;
+let countdownInterval;
+let blockchainInterval;
+let blockchainBlocks = 0;
+let dataBufferCount = 0;
+const heartRateData = [];
+const maxDataPoints = 300;
+let currentRiskScore = 0;
 
-    function init() {
-        const container = document.getElementById('lidarCanvasContainer');
-        const canvas = document.getElementById('lidarCanvas');
-        userIcon = document.getElementById('userIcon');
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111827);
-        camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-        camera.position.z = roomSize * 1.5;
-        renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
-        const light = new THREE.AmbientLight(0x404040);
-        scene.add(light);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(1, 1, 1);
-        scene.add(directionalLight);
-        function generateLidarPoints() {
-            const geometry = new THREE.BoxGeometry(objectSize, objectSize, objectSize);
-            const material = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
-            for (let i = 0; i < maxObjects; i++) {
-                const cube = new THREE.Mesh(geometry, material);
-                cube.position.x = (Math.random() - 0.5) * roomSize;
-                cube.position.y = (Math.random() - 0.5) * roomSize;
-                cube.position.z = (Math.random() - 0.5) * roomSize;
-                scene.add(cube);
-                objects.push(cube);
-            }
-        }
-        generateLidarPoints();
-        userIcon.style.display = 'block';
-        const geometry = new THREE.CylinderGeometry(roomSize / 2, roomSize / 2, 0.1, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.2 });
-        scanLine = new THREE.Mesh(geometry, material);
-        scanLine.rotation.x = Math.PI / 2;
-        scene.add(scanLine);
-        window.addEventListener('resize', () => {
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-            renderer.setSize(width, height);
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-        });
-        canvas.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            previousMousePosition.x = e.clientX;
-            previousMousePosition.y = e.clientY;
-        });
-        canvas.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const deltaX = e.clientX - previousMousePosition.x;
-            const deltaY = e.clientY - previousMousePosition.y;
-            scene.rotation.y += deltaX * 0.005;
-            scene.rotation.x += deltaY * 0.005;
-            previousMousePosition.x = e.clientX;
-            previousMousePosition.y = e.clientY;
-        });
-    }
+const apiKey = "";
+async function speak(text, voice) {
+const payload = {
+contents: [{
+parts: [{ text: text }]
+}],
+generationConfig: {
+responseModalities: ["AUDIO"],
+speechConfig: {
+voiceConfig: {
+prebuiltVoiceConfig: { voiceName: voice }
+}
+}
+},
+model: "gemini-2.5-flash-preview-tts"
+};
+const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+try {
+const response = await fetch(apiUrl, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(payload)
+});
+const result = await response.json();
+const part = result?.candidates?.[0]?.content?.parts?.[0];
+const audioData = part?.inlineData?.data;
+const mimeType = part?.inlineData?.mimeType;
+if (audioData && mimeType && mimeType.startsWith("audio/")) {
+const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+const pcmData = base64ToArrayBuffer(audioData);
+const pcm16 = new Int16Array(pcmData);
+const wavBlob = pcmToWav(pcm16, sampleRate);
+const audioUrl = URL.createObjectURL(wavBlob);
+const audio = new Audio(audioUrl);
+audio.play();
+} else {
+console.error("Audio data is missing or invalid in the API response.");
+}
+} catch (error) {
+console.error("Error calling TTS API:", error);
+}
+}
 
-    function animate() {
-        requestAnimationFrame(animate);
-        scanLine.rotation.z += 0.01;
-        if(emergencyScan) {
-            scanLine.material.color.setHex(0xef4444);
-        } else {
-            scanLine.material.color.setHex(0x4ade80);
-        }
-        if (emergencyScan) {
-            objects.forEach(obj => {
-                obj.position.x += (Math.random() - 0.5) * 0.02;
-                obj.position.y += (Math.random() - 0.5) * 0.02;
-                obj.position.z += (Math.random() - 0.5) * 0.02;
-            });
-        }
-        renderer.render(scene, camera);
-    }
-    window.onload = function () {
-        init();
-        animate();
-    };
+function base64ToArrayBuffer(base64) {
+const binaryString = window.atob(base64);
+const len = binaryString.length;
+const bytes = new Uint8Array(len);
+for (let i = 0; i < len; i++) {
+bytes[i] = binaryString.charCodeAt(i);
+}
+return bytes.buffer;
+}
+function pcmToWav(pcmData, sampleRate) {
+const numChannels = 1;
+const bitDepth = 16;
+const bytesPerSample = bitDepth / 8;
+const dataLength = pcmData.length * bytesPerSample;
+const buffer = new ArrayBuffer(44 + dataLength);
+const view = new DataView(buffer);
+let offset = 0;
+const writeString = (str) => {
+for (let i = 0; i < str.length; i++) {
+view.setUint8(offset++, str.charCodeAt(i));
+}
+};
+writeString('RIFF');
+view.setUint32(offset, 36 + dataLength, true); offset += 4;
+writeString('WAVE');
+writeString('fmt ');
+view.setUint32(offset, 16, true); offset += 4;
+view.setUint16(offset, 1, true); offset += 2;
+view.setUint16(offset, numChannels, true); offset += 2;
+view.setUint32(offset, sampleRate, true); offset += 4;
+view.setUint32(offset, sampleRate * numChannels * bytesPerSample, true); offset += 4;
+view.setUint16(offset, numChannels * bytesPerSample, true); offset += 2;
+view.setUint16(offset, bitDepth, true); offset += 2;
+writeString('data');
+view.setUint32(offset, dataLength, true); offset += 4;
+for (let i = 0; i < pcmData.length; i++) {
+view.setInt16(offset, pcmData[i], true);
+offset += 2;
+}
+return new Blob([view], { type: 'audio/wav' });
+}
+for(let i = 0; i < 20; i++) {
+const bar = document.createElement('div');
+bar.className = 'audio-bar';
+bar.style.animationDelay = `${Math.random() * -0.5}s`;
+audioVisualizerEl.appendChild(bar);
+}
+for(let i = 0; i < 5; i++) {
+const packet = document.createElement('div');
+packet.className = 'w-4 h-4 rounded-full bg-gray-600 transition-colors duration-300';
+dataBufferEl.appendChild(packet);
+}
+const logEvent = (message, type = 'info') => {
+const timestamp = new Date().toLocaleTimeString();
+const logEntry = document.createElement('div');
+let iconClass = '';
+let bgColor = '';
+let textColor = '';
+let borderColor = '';
+switch(type) {
+case 'danger':
+iconClass = 'fas fa-exclamation-circle';
+bgColor = 'bg-red-900/40';
+textColor = 'text-red-200';
+borderColor = 'border-red-700';
+break;
+case 'warning':
+iconClass = 'fas fa-bell';
+bgColor = 'bg-yellow-900/40';
+textColor = 'text-yellow-200';
+borderColor = 'border-yellow-700';
+break;
+case 'prediction':
+iconClass = 'fas fa-eye-slash';
+bgColor = 'bg-purple-900/40';
+textColor = 'text-purple-200';
+borderColor = 'border-purple-700';
+break;
+case 'blockchain':
+iconClass = 'fas fa-link';
+bgColor = 'bg-sky-900/40';
+textColor = 'text-sky-200';
+borderColor = 'border-sky-700';
+break;
+case 'recording':
+iconClass = 'fas fa-video';
+bgColor = 'bg-gray-900/40';
+textColor = 'text-gray-200';
+borderColor = 'border-gray-700';
+break;
+default:
+iconClass = 'fas fa-info-circle';
+bgColor = 'bg-green-900/40';
+textColor = 'text-green-200';
+borderColor = 'border-green-700';
+}
+logEntry.className = `p-3 my-2 rounded-lg ${bgColor} ${textColor} border ${borderColor}`;
+logEntry.innerHTML = `<span class="font-bold">[${timestamp}]</span> <i class="${iconClass} mr-2"></i> ${message}`;
+eventLogEl.prepend(logEntry);
+};
+const updateRiskMeter = () => {
+let color = '#4ade80';
+let status = 'Stabile';
+if (currentRiskScore > 75) {
+color = '#f87171';
+status = 'Critico';
+} else if (currentRiskScore > 50) {
+color = '#facc15';
+status = 'Allerta';
+} else if (currentRiskScore > 25) {
+color = '#fb923c';
+status = 'Anomalia';
+}
+riskMeterEl.style.width = `${currentRiskScore}%`;
+riskMeterEl.style.backgroundColor = color;
+riskLevelTextEl.textContent = status;
+riskLevelTextEl.className = `text-xl font-bold ${currentRiskScore > 75 ? 'text-red-500' : currentRiskScore > 50 ? 'text-yellow-500' : 'text-green-500'}`;
+};
+const updateSensors = () => {
+if (isEmergency) return;
+const heartRate = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
+heartRateEl.textContent = `${heartRate} BPM`;
+heartRateData.push(heartRate);
+if (heartRateData.length > maxDataPoints) {
+heartRateData.shift();
+}
+const gyroData = ['Stabile', 'Leggero movimento', 'Rotazione lenta'];
+const gyroStatus = gyroData[Math.floor(Math.random() * gyroData.length)];
+gyroDataEl.textContent = gyroStatus;
+const noiseLevel = ['Normale', 'Rumore ambientale', 'Conversazione'];
+const noiseStatus = noiseLevel[Math.floor(Math.random() * noiseLevel.length)];
+noiseLevelEl.textContent = noiseStatus;
+let hrRisk = (heartRate > 85) ? 50 : 0;
+let gyroRisk = (gyroStatus !== 'Stabile') ? 25 : 0;
+let noiseRisk = (noiseStatus === 'Urla' || noiseStatus === 'Conversazione') ? 25 : 0;
+currentRiskScore = Math.min(100, hrRisk + gyroRisk + noiseRisk);
+updateRiskMeter();
+if (currentRiskScore >= 75) {
+logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio critico (${currentRiskScore}).`, 'danger');
+} else if (currentRiskScore > 50) {
+logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio elevato (${currentRiskScore}).`, 'warning');
+} else if (currentRiskScore > 25) {
+logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio moderato (${currentRiskScore}).`, 'warning');
+}
+};
+const generateEmergencyImage = async () => {
+imagePlaceholderEl.classList.add('hidden');
+capturedImageEl.classList.add('hidden');
+imageLoadingEl.classList.remove('hidden');
+const imageUrl = `https://placehold.co/400x300/ef4444/ffffff?text=AGRESSORE`;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const heartRateEl = document.getElementById('heartRate');
-        const gpsLocationEl = document.getElementById('gpsLocation');
-        const gyroDataEl = document.getElementById('gyroData');
-        const noiseLevelEl = document.getElementById('noiseLevel');
-        const aiStatusEl = document.getElementById('aiStatus');
-        const manualActivateBtn = document.getElementById('manualActivateBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const eventLogEl = document.getElementById('eventLog');
-        const deviceStatusEl = document.getElementById('deviceStatus');
-        const mainContainerEl = document.getElementById('mainContainer');
-        const emergencyCountdownEl = document.getElementById('emergencyCountdown');
-        const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
-        const recordingStatusEl = document.getElementById('recordingStatus');
-        const riskMeterEl = document.getElementById('riskMeter');
-        const riskLevelTextEl = document.getElementById('riskLevelText');
-        const audioVisualizerEl = document.getElementById('audioVisualizer');
-        const dataBufferEl = document.getElementById('dataBuffer');
-        const dataBufferStatusEl = document.getElementById('dataBufferStatus');
-        const blockchainContainerEl = document.getElementById('blockchainContainer');
-        const rightPanelEl = document.getElementById('rightPanel');
-        const imagePanelEl = document.getElementById('imagePanel');
-        const imagePlaceholderEl = document.getElementById('imagePlaceholder');
-        const imageLoadingEl = document.getElementById('imageLoading');
-        const capturedImageEl = document.getElementById('capturedImage');
+setTimeout(() => {
+capturedImageEl.src = imageUrl;
+capturedImageEl.classList.remove('hidden');
+imageLoadingEl.classList.add('hidden');
+logEvent('Istantanea forense creata con successo.', 'info');
+}, 1000);
+};
+const activateEmergencyMode = async (source) => {
+if (isEmergency) return;
+isEmergency = true;
+emergencyScan = true;
+clearInterval(sensorInterval);
+manualActivateBtn.disabled = true;
+resetBtn.disabled = false;
+mainContainerEl.classList.add('emergency-mode-bg');
 
-        let isEmergency = false;
-        let sensorInterval;
-        let countdownInterval;
-        let blockchainInterval;
-        let blockchainBlocks = 0;
-        let dataBufferCount = 0;
-        const heartRateData = [];
-        const maxDataPoints = 300;
-        let currentRiskScore = 0;
-        
-        const apiKey = "";
+aiStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 animate-pulse"></i> Emergenza Rilevata!`;
+aiStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
+deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span><span>Stato: EMERGENZA</span>`;
+deviceStatusEl.className = 'flex items-center space-x-2 text-base text-red-500 font-semibold';
 
-        async function speak(text, voice) {
-          const payload = {
-              contents: [{
-                  parts: [{ text: text }]
-              }],
-              generationConfig: {
-                  responseModalities: ["AUDIO"],
-                  speechConfig: {
-                      voiceConfig: {
-                          prebuiltVoiceConfig: { voiceName: voice }
-                      }
-                  }
-              },
-              model: "gemini-2.5-flash-preview-tts"
-          };
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-          try {
-              const response = await fetch(apiUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload)
-              });
-              const result = await response.json();
-              const part = result?.candidates?.[0]?.content?.parts?.[0];
-              const audioData = part?.inlineData?.data;
-              const mimeType = part?.inlineData?.mimeType;
-              if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                  const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-                  const pcmData = base64ToArrayBuffer(audioData);
-                  const pcm16 = new Int16Array(pcmData);
-                  const wavBlob = pcmToWav(pcm16, sampleRate);
-                  const audioUrl = URL.createObjectURL(wavBlob);
-                  const audio = new Audio(audioUrl);
-                  audio.play();
-              } else {
-                  console.error("Audio data is missing or invalid in the API response.");
-              }
-          } catch (error) {
-              console.error("Error calling TTS API:", error);
-          }
-        }
-        
-        function base64ToArrayBuffer(base64) {
-            const binaryString = window.atob(base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-        function pcmToWav(pcmData, sampleRate) {
-            const numChannels = 1;
-            const bitDepth = 16;
-            const bytesPerSample = bitDepth / 8;
-            const dataLength = pcmData.length * bytesPerSample;
-            const buffer = new ArrayBuffer(44 + dataLength);
-            const view = new DataView(buffer);
-            let offset = 0;
-            const writeString = (str) => {
-                for (let i = 0; i < str.length; i++) {
-                    view.setUint8(offset++, str.charCodeAt(i));
-                }
-            };
-            writeString('RIFF');
-            view.setUint32(offset, 36 + dataLength, true); offset += 4;
-            writeString('WAVE');
-            writeString('fmt ');
-            view.setUint32(offset, 16, true); offset += 4;
-            view.setUint16(offset, 1, true); offset += 2;
-            view.setUint16(offset, numChannels, true); offset += 2;
-            view.setUint32(offset, sampleRate, true); offset += 4;
-            view.setUint32(offset, sampleRate * numChannels * bytesPerSample, true); offset += 4;
-            view.setUint16(offset, numChannels * bytesPerSample, true); offset += 2;
-            view.setUint16(offset, bitDepth, true); offset += 2;
-            writeString('data');
-            view.setUint32(offset, dataLength, true); offset += 4;
-            for (let i = 0; i < pcmData.length; i++) {
-                view.setInt16(offset, pcmData[i], true);
-                offset += 2;
-            }
-            return new Blob([view], { type: 'audio/wav' });
-        }
-        for(let i = 0; i < 20; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'audio-bar';
-            bar.style.animationDelay = `${Math.random() * -0.5}s`;
-            audioVisualizerEl.appendChild(bar);
-        }
-        for(let i = 0; i < 5; i++) {
-            const packet = document.createElement('div');
-            packet.className = 'w-4 h-4 rounded-full bg-gray-600 transition-colors duration-300';
-            dataBufferEl.appendChild(packet);
-        }
-        const logEvent = (message, type = 'info') => {
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            let iconClass = '';
-            let bgColor = '';
-            let textColor = '';
-            let borderColor = '';
-            switch(type) {
-                case 'danger':
-                    iconClass = 'fas fa-exclamation-circle';
-                    bgColor = 'bg-red-900/40';
-                    textColor = 'text-red-200';
-                    borderColor = 'border-red-700';
-                    break;
-                case 'warning':
-                    iconClass = 'fas fa-bell';
-                    bgColor = 'bg-yellow-900/40';
-                    textColor = 'text-yellow-200';
-                    borderColor = 'border-yellow-700';
-                    break;
-                case 'prediction':
-                    iconClass = 'fas fa-eye-slash';
-                    bgColor = 'bg-purple-900/40';
-                    textColor = 'text-purple-200';
-                    borderColor = 'border-purple-700';
-                    break;
-                case 'blockchain':
-                    iconClass = 'fas fa-link';
-                    bgColor = 'bg-sky-900/40';
-                    textColor = 'text-sky-200';
-                    borderColor = 'border-sky-700';
-                    break;
-                case 'recording':
-                    iconClass = 'fas fa-video';
-                    bgColor = 'bg-gray-900/40';
-                    textColor = 'text-gray-200';
-                    borderColor = 'border-gray-700';
-                    break;
-                default:
-                    iconClass = 'fas fa-info-circle';
-                    bgColor = 'bg-green-900/40';
-                    textColor = 'text-green-200';
-                    borderColor = 'border-green-700';
-            }
-            logEntry.className = `p-3 my-2 rounded-lg ${bgColor} ${textColor} border ${borderColor}`;
-            logEntry.innerHTML = `<span class="font-bold">[${timestamp}]</span> <i class="${iconClass} mr-2"></i> ${message}`;
-            eventLogEl.prepend(logEntry);
-        };
-        const updateRiskMeter = () => {
-            let color = '#4ade80';
-            let status = 'Stabile';
-            if (currentRiskScore > 75) {
-                color = '#f87171';
-                status = 'Critico';
-            } else if (currentRiskScore > 50) {
-                color = '#facc15';
-                status = 'Allerta';
-            } else if (currentRiskScore > 25) {
-                color = '#fb923c';
-                status = 'Anomalia';
-            }
-            riskMeterEl.style.width = `${currentRiskScore}%`;
-            riskMeterEl.style.backgroundColor = color;
-            riskLevelTextEl.textContent = status;
-            riskLevelTextEl.className = `text-xl font-bold ${currentRiskScore > 75 ? 'text-red-500' : currentRiskScore > 50 ? 'text-yellow-500' : 'text-green-500'}`;
-        };
-        const updateSensors = () => {
-            if (isEmergency) return;
-            const heartRate = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
-            heartRateEl.textContent = `${heartRate} BPM`;
-            heartRateData.push(heartRate);
-            if (heartRateData.length > maxDataPoints) {
-                heartRateData.shift();
-            }
-            const gyroData = ['Stabile', 'Leggero movimento', 'Rotazione lenta'];
-            const gyroStatus = gyroData[Math.floor(Math.random() * gyroData.length)];
-            gyroDataEl.textContent = gyroStatus;
-            const noiseLevel = ['Normale', 'Rumore ambientale', 'Conversazione'];
-            const noiseStatus = noiseLevel[Math.floor(Math.random() * noiseLevel.length)];
-            noiseLevelEl.textContent = noiseStatus;
-            let hrRisk = (heartRate > 85) ? 50 : 0;
-            let gyroRisk = (gyroStatus !== 'Stabile') ? 25 : 0;
-            let noiseRisk = (noiseStatus === 'Urla' || noiseStatus === 'Conversazione') ? 25 : 0;
-            currentRiskScore = Math.min(100, hrRisk + gyroRisk + noiseRisk);
-            updateRiskMeter();
-            if (currentRiskScore >= 75) {
-                logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio critico (${currentRiskScore}).`, 'danger');
-            } else if (currentRiskScore > 50) {
-                 logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio elevato (${currentRiskScore}).`, 'warning');
-            } else if (currentRiskScore > 25) {
-                 logEvent(`L'IA ha rilevato una combinazione di dati anomali. Livello di rischio moderato (${currentRiskScore}).`, 'warning');
-            }
-        };
-        const generateEmergencyImage = async () => {
-            imagePlaceholderEl.classList.add('hidden');
-            capturedImageEl.classList.add('hidden');
-            imageLoadingEl.classList.remove('hidden');
-            const imageUrl = `https://placehold.co/400x300/ef4444/ffffff?text=AGRESSORE`;
-            
-            setTimeout(() => {
-                capturedImageEl.src = imageUrl;
-                capturedImageEl.classList.remove('hidden');
-                imageLoadingEl.classList.add('hidden');
-                logEvent('Istantanea forense creata con successo.', 'info');
-            }, 1000);
-        };
-        const activateEmergencyMode = async (source) => {
-            if (isEmergency) return;
-            isEmergency = true;
-            emergencyScan = true;
-            clearInterval(sensorInterval);
-            manualActivateBtn.disabled = true;
-            resetBtn.disabled = false;
-            mainContainerEl.classList.add('emergency-mode-bg');
-            
-            aiStatusEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 animate-pulse"></i> Emergenza Rilevata!`;
-            aiStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
-            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span><span>Stato: EMERGENZA</span>`;
-            deviceStatusEl.className = 'flex items-center space-x-2 text-base text-red-500 font-semibold';
-            
-            logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e backup dati avviato.`, 'danger');
-            await speak("Modalità emergenza attivata. Attivazione registrazione e backup dati in corso.", voiceNames.female);
-            recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2 animate-pulse"></i> Registrazione in corso`;
-            recordingStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
-            audioVisualizerEl.classList.remove('hidden');
-            dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2 animate-pulse"></i> Buffer dati in corso`;
-            dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-red-500';
-            blockchainContainerEl.innerHTML = '';
-            
-            const blockchainStep = async () => {
-                if(dataBufferCount < 5) {
-                    dataBufferEl.children[dataBufferCount].classList.remove('bg-gray-600');
-                    dataBufferEl.children[dataBufferCount].classList.add('bg-blue-400', 'animate-pulse');
-                    dataBufferCount++;
-                    logEvent(`Pacchetto dati #${dataBufferCount} bufferizzato.`, 'info');
-                } else {
-                    const block = document.createElement('div');
-                    block.className = `blockchain-block w-8 h-8 flex items-center justify-center rounded-lg shadow-md mr-1 text-white text-xs`;
-                    block.textContent = `${blockchainBlocks + 1}`;
-                    blockchainContainerEl.appendChild(block);
-                    if (blockchainContainerEl.children.length > 1) {
-                         const link = document.createElement('div');
-                         link.className = `w-4 h-1 bg-gray-600 rounded-full mx-1`;
-                         blockchainContainerEl.insertBefore(link, block);
-                    }
-                    if (blockchainContainerEl.children.length > 7) {
-                        blockchainContainerEl.children[0].remove();
-                        blockchainContainerEl.children[0].remove();
-                    }
-                    blockchainBlocks++;
-                    logEvent(`Blocco dati #${blockchainBlocks} aggiunto alla blockchain.`, 'blockchain');
-                    dataBufferCount = 0;
-                    dataBufferEl.innerHTML = '';
-                    for(let i = 0; i < 5; i++) {
-                        const packet = document.createElement('div');
-                        packet.className = 'w-4 h-4 rounded-full bg-gray-600 transition-colors duration-300';
-                        dataBufferEl.appendChild(packet);
-                    }
-                }
-            }
-            blockchainInterval = setInterval(blockchainStep, 1000);
-            emergencyCounterSectionEl.classList.remove('hidden');
-            startCountdown();
-        };
-        const startCountdown = () => {
-            let timeLeft = 30;
-            emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
-            countdownInterval = setInterval(async () => {
-                timeLeft--;
-                emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    clearInterval(blockchainInterval);
-                    logEvent('Backup di emergenza completo. Dati al sicuro e immutabili.', 'info');
-                    emergencyCountdownEl.textContent = 'Completo';
-                    await speak("Backup di emergenza completo. I dati sono ora al sicuro.", voiceNames.female);
-                    recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2"></i> Backup completo`;
-                    recordingStatusEl.className = 'text-xl font-bold text-green-500 flex items-center';
-                    dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2"></i> Buffer svuotato`;
-                    dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
-                    audioVisualizerEl.classList.add('hidden');
-                }
-            }, 1000);
-        };
-        const resetDevice = () => {
-            isEmergency = false;
-            emergencyScan = false;
-            clearInterval(sensorInterval);
-            clearInterval(countdownInterval);
-            clearInterval(blockchainInterval);
-            rightPanel.classList.remove('animate-pulse');
-            manualActivateBtn.disabled = false;
-            resetBtn.disabled = true;
-            mainContainerEl.classList.remove('emergency-mode-bg');
-            aiStatusEl.innerHTML = `<i class="fas fa-brain mr-2"></i> In ascolto...`;
-            aiStatusEl.className = 'text-xl font-bold text-sky-400 flex items-center';
-            deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
-            deviceStatusEl.className = 'flex items-center space-x-2 text-base text-green-400 font-semibold';
-            recordingStatusEl.innerHTML = `<i class="fas fa-circle mr-2 text-gray-500"></i> In standby`;
-            recordingStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
-            dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2"></i> Buffer vuoto`;
-            dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
-            audioVisualizerEl.classList.add('hidden');
-            blockchainContainerEl.innerHTML = '';
-            blockchainBlocks = 0;
-            dataBufferCount = 0;
-            emergencyCounterSectionEl.classList.add('hidden');
-            logEvent('Dispositivo ripristinato. Monitoraggio normale.', 'info');
-            sensorInterval = setInterval(updateSensors, 1000);
-            eventLogEl.innerHTML = '';
-            heartRateData.length = 0;
-            currentRiskScore = 0;
-            updateRiskMeter();
-            imagePlaceholderEl.textContent = 'Nessuna immagine catturata.';
-            imagePlaceholderEl.classList.remove('hidden');
-            capturedImageEl.classList.add('hidden');
-            imageLoadingEl.classList.add('hidden');
-        };
-        manualActivateBtn.addEventListener('click', () => {
-            generateEmergencyImage();
-            activateEmergencyMode('attivazione manuale');
-        });
-        resetBtn.addEventListener('click', () => {
-            resetDevice();
-        });
-        resetDevice();
-    });
+logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e backup dati avviato.`, 'danger');
+await speak("Modalità emergenza attivata. Attivazione registrazione e backup dati in corso.", voiceNames.female);
+recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2 animate-pulse"></i> Registrazione in corso`;
+recordingStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
+audioVisualizerEl.classList.remove('hidden');
+dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2 animate-pulse"></i> Buffer dati in corso`;
+dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-red-500';
+blockchainContainerEl.innerHTML = '';
+
+const blockchainStep = async () => {
+if(dataBufferCount < 5) {
+dataBufferEl.children[dataBufferCount].classList.remove('bg-gray-600');
+dataBufferEl.children[dataBufferCount].classList.add('bg-blue-400', 'animate-pulse');
+dataBufferCount++;
+logEvent(`Pacchetto dati #${dataBufferCount} bufferizzato.`, 'info');
+} else {
+const block = document.createElement('div');
+block.className = `blockchain-block w-8 h-8 flex items-center justify-center rounded-lg shadow-md mr-1 text-white text-xs`;
+block.textContent = `${blockchainBlocks + 1}`;
+blockchainContainerEl.appendChild(block);
+if (blockchainContainerEl.children.length > 1) {
+const link = document.createElement('div');
+link.className = `w-4 h-1 bg-gray-600 rounded-full mx-1`;
+blockchainContainerEl.insertBefore(link, block);
+}
+if (blockchainContainerEl.children.length > 7) {
+blockchainContainerEl.children[0].remove();
+blockchainContainerEl.children[0].remove();
+}
+blockchainBlocks++;
+logEvent(`Blocco dati #${blockchainBlocks} aggiunto alla blockchain.`, 'blockchain');
+dataBufferCount = 0;
+dataBufferEl.innerHTML = '';
+for(let i = 0; i < 5; i++) {
+const packet = document.createElement('div');
+packet.className = 'w-4 h-4 rounded-full bg-gray-600 transition-colors duration-300';
+dataBufferEl.appendChild(packet);
+}
+}
+}
+blockchainInterval = setInterval(blockchainStep, 1000);
+emergencyCounterSectionEl.classList.remove('hidden');
+startCountdown();
+};
+const startCountdown = () => {
+let timeLeft = 30;
+emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+countdownInterval = setInterval(async () => {
+timeLeft--;
+emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+if (timeLeft <= 0) {
+clearInterval(countdownInterval);
+clearInterval(blockchainInterval);
+logEvent('Backup di emergenza completo. Dati al sicuro e immutabili.', 'info');
+emergencyCountdownEl.textContent = 'Completo';
+await speak("Backup di emergenza completo. I dati sono ora al sicuro.", voiceNames.female);
+recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2"></i> Backup completo`;
+recordingStatusEl.className = 'text-xl font-bold text-green-500 flex items-center';
+dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2"></i> Buffer svuotato`;
+dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
+audioVisualizerEl.classList.add('hidden');
+}
+}, 1000);
+};
+const resetDevice = () => {
+isEmergency = false;
+emergencyScan = false;
+clearInterval(sensorInterval);
+clearInterval(countdownInterval);
+clearInterval(blockchainInterval);
+rightPanel.classList.remove('animate-pulse');
+manualActivateBtn.disabled = false;
+resetBtn.disabled = true;
+mainContainerEl.classList.remove('emergency-mode-bg');
+aiStatusEl.innerHTML = `<i class="fas fa-brain mr-2"></i> In ascolto...`;
+aiStatusEl.className = 'text-xl font-bold text-sky-400 flex items-center';
+deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
+deviceStatusEl.className = 'flex items-center space-x-2 text-base text-green-400 font-semibold';
+recordingStatusEl.innerHTML = `<i class="fas fa-circle mr-2 text-gray-500"></i> In standby`;
+recordingStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
+dataBufferStatusEl.innerHTML = `<i class="fas fa-hdd mr-2"></i> Buffer vuoto`;
+dataBufferStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
+audioVisualizerEl.classList.add('hidden');
+blockchainContainerEl.innerHTML = '';
+blockchainBlocks = 0;
+dataBufferCount = 0;
+emergencyCounterSectionEl.classList.add('hidden');
+logEvent('Dispositivo ripristinato. Monitoraggio normale.', 'info');
+sensorInterval = setInterval(updateSensors, 1000);
+eventLogEl.innerHTML = '';
+heartRateData.length = 0;
+currentRiskScore = 0;
+updateRiskMeter();
+imagePlaceholderEl.textContent = 'Nessuna immagine catturata.';
+imagePlaceholderEl.classList.remove('hidden');
+capturedImageEl.classList.add('hidden');
+imageLoadingEl.classList.add('hidden');
+};
+manualActivateBtn.addEventListener('click', () => {
+generateEmergencyImage();
+activateEmergencyMode('attivazione manuale');
+});
+resetBtn.addEventListener('click', () => {
+resetDevice();
+});
+resetDevice();
+});
 </script>
 </body>
 </html>
