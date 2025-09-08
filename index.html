@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -57,50 +58,23 @@
         @keyframes blink {
             50% { opacity: 0; }
         }
-        #miniMap {
-            width: 100%;
-            height: 120px;
-            background-color: #0c0f16;
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-        .map-marker {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background-color: #38bdf8;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-        }
-        .map-path {
-            position: absolute;
-            width: 2px;
-            background-color: #60a5fa;
-            transform-origin: top;
-            animation: growPath 10s linear forwards;
-        }
-        @keyframes growPath {
-            from { transform: scaleY(0); }
-            to { transform: scaleY(1); }
-        }
-        .lidar-point {
-            position: absolute;
-            background-color: #93c5fd;
-            border-radius: 50%;
-            transition: background-color 0.5s ease, transform 0.5s ease;
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-8">
 
 <div id="mainContainer" class="container-bg shadow-2xl rounded-3xl p-10 max-w-5xl w-full mx-auto transition-all duration-1000">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-10">
-        <h1 class="text-5xl font-extrabold text-sky-400">LifeVault</h1>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
+        <div class="flex items-center mb-4 sm:mb-0">
+            <h1 class="text-5xl font-extrabold text-sky-400">LifeVault</h1>
+            <nav class="ml-8 hidden sm:block">
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="text-gray-400 hover:text-sky-400 transition-colors duration-300 font-semibold">Dashboard</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-sky-400 transition-colors duration-300 font-semibold">Sensori</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-sky-400 transition-colors duration-300 font-semibold">Impostazioni</a></li>
+                </ul>
+            </nav>
+        </div>
         <div id="deviceStatus" class="flex items-center space-x-2 text-base text-green-400 font-semibold">
             <span class="relative flex h-3 w-3">
                 <span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -137,9 +111,6 @@
                         <div id="gpsLocation" class="text-lg font-mono text-gray-300">41.89° N, 12.51° E</div>
                     </div>
                 </div>
-                <div id="miniMap" class="mt-4">
-                    <div id="mapMarker" class="map-marker"></div>
-                </div>
             </div>
 
             <!-- LiDAR Scan Panel -->
@@ -147,8 +118,8 @@
                 <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
                     <i class="fas fa-cube text-purple-400 mr-2"></i> Scansione LiDAR Avanzata
                 </h2>
-                <div id="lidarCanvasContainer" class="bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden h-48">
-                    <!-- I punti LiDAR saranno generati qui dinamicamente -->
+                <div id="lidarCanvasContainer" class="bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden h-96">
+                    <canvas id="lidarCanvas" class="w-full h-full"></canvas>
                 </div>
             </div>
 
@@ -199,6 +170,16 @@
                 </div>
             </div>
 
+            <!-- Heart Rate Chart Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-heartbeat text-red-500 mr-2"></i> Andamento Frequenza Cardiaca (5 min)
+                </h2>
+                <div class="bg-gray-900 rounded-lg border border-gray-700 p-2 flex items-center justify-center h-48">
+                    <canvas id="heartRateChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
             <!-- Event Log Panel -->
             <div class="card rounded-2xl p-6 flex-grow">
                 <h2 class="text-xl font-semibold text-sky-400 mb-4">Registro Eventi</h2>
@@ -212,6 +193,104 @@
 </div>
 
 <script>
+    let scene, camera, renderer, objects = [], controls;
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    const maxObjects = 500;
+    const objectSize = 0.5;
+    const roomSize = 25;
+
+    // Funzione per inizializzare la scena 3D
+    function init() {
+        // Seleziona il contenitore per il canvas
+        const container = document.getElementById('lidarCanvasContainer');
+        const canvas = document.getElementById('lidarCanvas');
+
+        // Crea la scena
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111827); // Corrisponde al colore di sfondo del contenitore
+
+        // Crea la telecamera
+        camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+        camera.position.z = roomSize * 1.5;
+
+        // Crea il renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+
+        // Aggiungi luce
+        const light = new THREE.AmbientLight(0x404040); // Luce soffusa
+        scene.add(light);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Luce direzionale
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Funzione per generare i punti LiDAR (cubi)
+        function generateLidarPoints() {
+            for (let i = 0; i < maxObjects; i++) {
+                const geometry = new THREE.BoxGeometry(objectSize, objectSize, objectSize);
+                const material = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
+                const cube = new THREE.Mesh(geometry, material);
+
+                // Posiziona i cubi casualmente all'interno di un'area definita
+                cube.position.x = (Math.random() - 0.5) * roomSize;
+                cube.position.y = (Math.random() - 0.5) * roomSize;
+                cube.position.z = (Math.random() - 0.5) * roomSize;
+
+                scene.add(cube);
+                objects.push(cube);
+            }
+        }
+
+        generateLidarPoints();
+
+        // Funzione per gestire il ridimensionamento della finestra
+        window.addEventListener('resize', () => {
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // Eventi per l'interazione con il mouse
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition.x = e.clientX;
+            previousMousePosition.y = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+
+            // Ruota la scena in base al movimento del mouse
+            scene.rotation.y += deltaX * 0.005;
+            scene.rotation.x += deltaY * 0.005;
+
+            previousMousePosition.x = e.clientX;
+            previousMousePosition.y = e.clientY;
+        });
+    }
+
+    // Funzione per il loop di animazione
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+    
+    // Inizializza la simulazione Three.js al caricamento della finestra
+    window.onload = function () {
+        init();
+        animate();
+    };
+
+    // Altro codice JavaScript per la simulazione
     document.addEventListener('DOMContentLoaded', () => {
         const heartRateEl = document.getElementById('heartRate');
         const gpsLocationEl = document.getElementById('gpsLocation');
@@ -226,14 +305,14 @@
         const mainContainerEl = document.getElementById('mainContainer');
         const emergencyCountdownEl = document.getElementById('emergencyCountdown');
         const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
-        const miniMapEl = document.getElementById('miniMap');
-        const mapMarkerEl = document.getElementById('mapMarker');
-        const lidarCanvasContainer = document.getElementById('lidarCanvasContainer');
+        const heartRateChartCanvas = document.getElementById('heartRateChart');
+        const ctx = heartRateChartCanvas.getContext('2d');
 
         let isEmergency = false;
         let sensorInterval;
         let countdownInterval;
-        let mapPath;
+        const heartRateData = [];
+        const maxDataPoints = 300; // 5 minuti a 1 secondo per punto
 
         const logEvent = (message, type = 'info') => {
             const timestamp = new Date().toLocaleTimeString();
@@ -266,38 +345,47 @@
             logEntry.innerHTML = `<span class="font-bold">[${timestamp}]</span> <i class="${iconClass} mr-2"></i> ${message}`;
             eventLogEl.prepend(logEntry);
         };
+        
+        const drawHeartRateChart = () => {
+            // Adatta le dimensioni del canvas
+            heartRateChartCanvas.width = heartRateChartCanvas.offsetWidth;
+            heartRateChartCanvas.height = heartRateChartCanvas.offsetHeight;
+            
+            ctx.clearRect(0, 0, heartRateChartCanvas.width, heartRateChartCanvas.height);
+            
+            if (heartRateData.length === 0) return;
+            
+            const padding = 10;
+            const width = heartRateChartCanvas.width - padding * 2;
+            const height = heartRateChartCanvas.height - padding * 2;
+            
+            // Trova il valore massimo e minimo per la scala
+            const maxHR = Math.max(...heartRateData) + 10;
+            const minHR = Math.min(...heartRateData) - 10;
+            const rangeHR = maxHR - minHR;
 
-        const createLidarPoints = (numPoints) => {
-            for (let i = 0; i < numPoints; i++) {
-                const point = document.createElement('div');
-                point.className = 'lidar-point absolute';
-                const size = Math.random() * 3 + 1;
-                point.style.width = `${size}px`;
-                point.style.height = `${size}px`;
-                point.style.left = `${Math.random() * 100}%`;
-                point.style.top = `${Math.random() * 100}%`;
-                point.dataset.z = Math.random() * 100; // Profondità simulata
-                lidarCanvasContainer.appendChild(point);
+            // Disegna il grafico
+            ctx.beginPath();
+            ctx.moveTo(padding, padding + height - (heartRateData[0] - minHR) / rangeHR * height);
+            
+            for (let i = 1; i < heartRateData.length; i++) {
+                const x = padding + (i / maxDataPoints) * width;
+                const y = padding + height - (heartRateData[i] - minHR) / rangeHR * height;
+                ctx.lineTo(x, y);
             }
-        };
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-        const animateLidar = () => {
-            const points = lidarCanvasContainer.querySelectorAll('.lidar-point');
-            points.forEach(point => {
-                let z = parseFloat(point.dataset.z);
-                z = (z + 1) % 100; // Movimento ciclico
-                point.dataset.z = z;
-
-                const opacity = 1 - (z / 100);
-                const size = 1 + (z / 50);
-                
-                point.style.transform = `scale(${size}) rotateZ(${z * 3.6}deg)`; // Rotazione e scala per effetto 3D
-                point.style.opacity = opacity;
-                
-                const hue = 220 + (z / 2); // Passaggio di colore per profondità
-                point.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
-            });
-            requestAnimationFrame(animateLidar);
+            // Disegna i punti
+            for (let i = 0; i < heartRateData.length; i++) {
+                const x = padding + (i / maxDataPoints) * width;
+                const y = padding + height - (heartRateData[i] - minHR) / rangeHR * height;
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
         };
 
         const updateSensors = () => {
@@ -305,6 +393,15 @@
             // Simulazione di dati casuali
             const heartRate = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
             heartRateEl.textContent = `${heartRate} BPM`;
+
+            // Aggiungi il nuovo valore all'array e taglia se necessario
+            heartRateData.push(heartRate);
+            if (heartRateData.length > maxDataPoints) {
+                heartRateData.shift();
+            }
+
+            // Disegna il grafico
+            drawHeartRateChart();
 
             const gyroData = ['Stabile', 'Leggero movimento', 'Rotazione lenta'];
             const gyroStatus = gyroData[Math.floor(Math.random() * gyroData.length)];
@@ -318,23 +415,6 @@
             if (heartRate > 85 && noiseStatus === 'Conversazione') {
                 logEvent('L\'IA ha rilevato un battito cardiaco elevato e rumore. Monitoraggio intensivo...', 'warning');
             }
-        };
-        
-        const updateMap = () => {
-            if (isEmergency) return;
-            // Simula il movimento casuale del marker sulla mappa
-            const currentX = parseFloat(mapMarkerEl.style.left) || 50;
-            const currentY = parseFloat(mapMarkerEl.style.top) || 50;
-            const newX = Math.min(100, Math.max(0, currentX + (Math.random() - 0.5) * 5));
-            const newY = Math.min(100, Math.max(0, currentY + (Math.random() - 0.5) * 5));
-            
-            mapMarkerEl.style.left = `${newX}%`;
-            mapMarkerEl.style.top = `${newY}%`;
-
-            // Simulazione della posizione GPS
-            const lat = (41.89 + (newY - 50) * 0.01).toFixed(2);
-            const lon = (12.51 + (newX - 50) * 0.01).toFixed(2);
-            gpsLocationEl.textContent = `${lat}° N, ${lon}° E`;
         };
 
         const activateEmergencyMode = (source) => {
@@ -393,6 +473,8 @@
             logEvent('Dispositivo ripristinato. Monitoraggio normale.', 'info');
             sensorInterval = setInterval(updateSensors, 1000);
             eventLogEl.innerHTML = '';
+            heartRateData.length = 0; // Resetta i dati del grafico
+            drawHeartRateChart();
         };
 
         manualActivateBtn.addEventListener('click', () => {
@@ -418,9 +500,6 @@
 
         // Inizializza la simulazione
         resetDevice();
-        setInterval(updateMap, 1500);
-        createLidarPoints(200); // Crea un numero iniziale di punti
-        animateLidar();
     });
 </script>
 
