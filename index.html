@@ -128,8 +128,8 @@
                 <button id="manualActivateBtn" class="bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
                     <i class="fas fa-exclamation-triangle mr-2"></i> Attivazione Manuale
                 </button>
-                <button id="threatBtn" class="bg-yellow-500 text-gray-900 font-bold py-4 rounded-xl shadow-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105">
-                    <i class="fas fa-skull-crossbones mr-2"></i> Simula Minaccia
+                <button id="useCaseBtn" class="bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-user-secret mr-2"></i> Simula Caso d'Uso: Stalking
                 </button>
                 <button id="resetBtn" class="bg-gray-700 text-gray-300 font-bold py-4 rounded-xl shadow-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105">
                     <i class="fas fa-undo mr-2"></i> Ripristina
@@ -139,6 +139,25 @@
 
         <!-- Dashboard Right Side -->
         <div class="flex flex-col space-y-8">
+            <!-- Recording & Encryption Panel -->
+            <div class="card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
+                    <i class="fas fa-video text-gray-400 mr-2"></i> Registrazione & Crittografia
+                </h2>
+                <div class="grid grid-cols-2 gap-4 text-gray-300">
+                    <div>
+                        <div class="text-sm text-gray-400">Stato Registrazione:</div>
+                        <div id="recordingStatus" class="text-xl font-bold flex items-center text-gray-400">
+                            <i class="fas fa-circle mr-2 text-gray-500"></i> In standby
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400">Blocchi Blockchain:</div>
+                        <div id="blockchainCounter" class="text-xl font-bold text-sky-400 font-mono">0</div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Security and AI Panel -->
             <div class="card rounded-2xl p-6">
                 <h2 class="text-xl font-semibold text-sky-400 mb-4 flex items-center">
@@ -202,26 +221,21 @@
 
     // Funzione per inizializzare la scena 3D
     function init() {
-        // Seleziona il contenitore per il canvas
         const container = document.getElementById('lidarCanvasContainer');
         const canvas = document.getElementById('lidarCanvas');
 
-        // Crea la scena
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111827); // Corrisponde al colore di sfondo del contenitore
+        scene.background = new THREE.Color(0x111827);
 
-        // Crea la telecamera
         camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
         camera.position.z = roomSize * 1.5;
 
-        // Crea il renderer
         renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
         renderer.setSize(container.offsetWidth, container.offsetHeight);
 
-        // Aggiungi luce
-        const light = new THREE.AmbientLight(0x404040); // Luce soffusa
+        const light = new THREE.AmbientLight(0x404040);
         scene.add(light);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Luce direzionale
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
         directionalLight.position.set(1, 1, 1);
         scene.add(directionalLight);
 
@@ -232,7 +246,6 @@
                 const material = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
                 const cube = new THREE.Mesh(geometry, material);
 
-                // Posiziona i cubi casualmente all'interno di un'area definita
                 cube.position.x = (Math.random() - 0.5) * roomSize;
                 cube.position.y = (Math.random() - 0.5) * roomSize;
                 cube.position.z = (Math.random() - 0.5) * roomSize;
@@ -244,7 +257,6 @@
 
         generateLidarPoints();
 
-        // Funzione per gestire il ridimensionamento della finestra
         window.addEventListener('resize', () => {
             const width = container.offsetWidth;
             const height = container.offsetHeight;
@@ -253,7 +265,6 @@
             camera.updateProjectionMatrix();
         });
 
-        // Eventi per l'interazione con il mouse
         canvas.addEventListener('mousedown', (e) => {
             isDragging = true;
             previousMousePosition.x = e.clientX;
@@ -269,7 +280,6 @@
             const deltaX = e.clientX - previousMousePosition.x;
             const deltaY = e.clientY - previousMousePosition.y;
 
-            // Ruota la scena in base al movimento del mouse
             scene.rotation.y += deltaX * 0.005;
             scene.rotation.x += deltaY * 0.005;
 
@@ -290,7 +300,7 @@
         animate();
     };
 
-    // Altro codice JavaScript per la simulazione
+    // --- Altro codice JavaScript per la simulazione ---
     document.addEventListener('DOMContentLoaded', () => {
         const heartRateEl = document.getElementById('heartRate');
         const gpsLocationEl = document.getElementById('gpsLocation');
@@ -298,7 +308,7 @@
         const noiseLevelEl = document.getElementById('noiseLevel');
         const aiStatusEl = document.getElementById('aiStatus');
         const manualActivateBtn = document.getElementById('manualActivateBtn');
-        const threatBtn = document.getElementById('threatBtn');
+        const useCaseBtn = document.getElementById('useCaseBtn');
         const resetBtn = document.getElementById('resetBtn');
         const eventLogEl = document.getElementById('eventLog');
         const deviceStatusEl = document.getElementById('deviceStatus');
@@ -306,13 +316,17 @@
         const emergencyCountdownEl = document.getElementById('emergencyCountdown');
         const emergencyCounterSectionEl = document.getElementById('emergencyCounterSection');
         const heartRateChartCanvas = document.getElementById('heartRateChart');
+        const recordingStatusEl = document.getElementById('recordingStatus');
+        const blockchainCounterEl = document.getElementById('blockchainCounter');
         const ctx = heartRateChartCanvas.getContext('2d');
 
         let isEmergency = false;
         let sensorInterval;
         let countdownInterval;
+        let blockchainInterval;
+        let blockchainBlocks = 0;
         const heartRateData = [];
-        const maxDataPoints = 300; // 5 minuti a 1 secondo per punto
+        const maxDataPoints = 300;
 
         const logEvent = (message, type = 'info') => {
             const timestamp = new Date().toLocaleTimeString();
@@ -335,6 +349,24 @@
                     textColor = 'text-yellow-200';
                     borderColor = 'border-yellow-700';
                     break;
+                case 'prediction':
+                    iconClass = 'fas fa-eye-slash';
+                    bgColor = 'bg-purple-900/40';
+                    textColor = 'text-purple-200';
+                    borderColor = 'border-purple-700';
+                    break;
+                case 'blockchain':
+                    iconClass = 'fas fa-link';
+                    bgColor = 'bg-sky-900/40';
+                    textColor = 'text-sky-200';
+                    borderColor = 'border-sky-700';
+                    break;
+                case 'recording':
+                    iconClass = 'fas fa-video';
+                    bgColor = 'bg-gray-900/40';
+                    textColor = 'text-gray-200';
+                    borderColor = 'border-gray-700';
+                    break;
                 default:
                     iconClass = 'fas fa-info-circle';
                     bgColor = 'bg-green-900/40';
@@ -347,7 +379,6 @@
         };
         
         const drawHeartRateChart = () => {
-            // Adatta le dimensioni del canvas
             heartRateChartCanvas.width = heartRateChartCanvas.offsetWidth;
             heartRateChartCanvas.height = heartRateChartCanvas.offsetHeight;
             
@@ -359,12 +390,10 @@
             const width = heartRateChartCanvas.width - padding * 2;
             const height = heartRateChartCanvas.height - padding * 2;
             
-            // Trova il valore massimo e minimo per la scala
             const maxHR = Math.max(...heartRateData) + 10;
             const minHR = Math.min(...heartRateData) - 10;
             const rangeHR = maxHR - minHR;
 
-            // Disegna il grafico
             ctx.beginPath();
             ctx.moveTo(padding, padding + height - (heartRateData[0] - minHR) / rangeHR * height);
             
@@ -377,7 +406,6 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Disegna i punti
             for (let i = 0; i < heartRateData.length; i++) {
                 const x = padding + (i / maxDataPoints) * width;
                 const y = padding + height - (heartRateData[i] - minHR) / rangeHR * height;
@@ -390,17 +418,14 @@
 
         const updateSensors = () => {
             if (isEmergency) return;
-            // Simulazione di dati casuali
             const heartRate = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
             heartRateEl.textContent = `${heartRate} BPM`;
 
-            // Aggiungi il nuovo valore all'array e taglia se necessario
             heartRateData.push(heartRate);
             if (heartRateData.length > maxDataPoints) {
                 heartRateData.shift();
             }
 
-            // Disegna il grafico
             drawHeartRateChart();
 
             const gyroData = ['Stabile', 'Leggero movimento', 'Rotazione lenta'];
@@ -411,9 +436,9 @@
             const noiseStatus = noiseLevel[Math.floor(Math.random() * noiseLevel.length)];
             noiseLevelEl.textContent = noiseStatus;
 
-            // Simula l'attivazione dell'IA
-            if (heartRate > 85 && noiseStatus === 'Conversazione') {
-                logEvent('L\'IA ha rilevato un battito cardiaco elevato e rumore. Monitoraggio intensivo...', 'warning');
+            // Logica AI Predittiva (non solo reattiva)
+            if (heartRate > 85 && noiseStatus === 'Conversazione' && gyroStatus === 'Leggero movimento') {
+                logEvent('L\'IA ha rilevato una combinazione di dati anomali. Allerta innalzata a livello 2.', 'prediction');
             }
         };
 
@@ -422,8 +447,8 @@
             isEmergency = true;
             clearInterval(sensorInterval);
             manualActivateBtn.disabled = true;
-            threatBtn.disabled = true;
-            resetBtn.style.display = 'none';
+            useCaseBtn.disabled = true;
+            resetBtn.style.display = 'block';
 
             mainContainerEl.classList.add('emergency-mode');
             
@@ -433,6 +458,15 @@
             deviceStatusEl.className = 'flex items-center space-x-2 text-base text-red-500 font-semibold';
             
             logEvent(`MODALITÀ EMERGENZA ATTIVATA (Fonte: ${source}). Registrazione in corso e backup dati avviato.`, 'danger');
+            
+            // Avvia la simulazione di registrazione e blockchain
+            recordingStatusEl.innerHTML = `<i class="fas fa-video mr-2 animate-pulse"></i> Registrazione in corso`;
+            recordingStatusEl.className = 'text-xl font-bold text-red-500 flex items-center';
+            blockchainInterval = setInterval(() => {
+                blockchainBlocks++;
+                blockchainCounterEl.textContent = blockchainBlocks;
+                logEvent(`Blocco dati #${blockchainBlocks} aggiunto alla blockchain.`, 'blockchain');
+            }, 5000);
 
             emergencyCounterSectionEl.classList.remove('hidden');
             startCountdown();
@@ -446,6 +480,7 @@
                 emergencyCountdownEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
+                    clearInterval(blockchainInterval);
                     logEvent('Backup di emergenza completo. Dati al sicuro e immutabili.', 'info');
                     emergencyCountdownEl.textContent = 'Completo';
                 }
@@ -456,9 +491,10 @@
             isEmergency = false;
             clearInterval(sensorInterval);
             clearInterval(countdownInterval);
+            clearInterval(blockchainInterval);
 
             manualActivateBtn.disabled = false;
-            threatBtn.disabled = false;
+            useCaseBtn.disabled = false;
             resetBtn.style.display = 'block';
 
             mainContainerEl.classList.remove('emergency-mode');
@@ -468,12 +504,17 @@
             deviceStatusEl.innerHTML = `<span class="relative flex h-3 w-3"><span class="status-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span>Stato: Attivo</span>`;
             deviceStatusEl.className = 'flex items-center space-x-2 text-base text-green-400 font-semibold';
             
+            recordingStatusEl.innerHTML = `<i class="fas fa-circle mr-2 text-gray-500"></i> In standby`;
+            recordingStatusEl.className = 'text-xl font-bold flex items-center text-gray-400';
+            blockchainCounterEl.textContent = '0';
+            blockchainBlocks = 0;
+            
             emergencyCounterSectionEl.classList.add('hidden');
             
             logEvent('Dispositivo ripristinato. Monitoraggio normale.', 'info');
             sensorInterval = setInterval(updateSensors, 1000);
             eventLogEl.innerHTML = '';
-            heartRateData.length = 0; // Resetta i dati del grafico
+            heartRateData.length = 0;
             drawHeartRateChart();
         };
 
@@ -481,17 +522,21 @@
             activateEmergencyMode('attivazione manuale');
         });
 
-        threatBtn.addEventListener('click', () => {
-            // Sequenza narrativa: dati anomali che portano all'attivazione
-            logEvent('ATTENZIONE: simulazione minaccia in corso...', 'warning');
+        useCaseBtn.addEventListener('click', () => {
+            logEvent('ATTENZIONE: simulazione caso d\'uso Stalking in corso...', 'warning');
+            setTimeout(() => {
+                logEvent('L\'IA ha rilevato una serie di eventi anomali: GPS e giroscopio indicano un\'inversione di marcia inaspettata.', 'prediction');
+                gpsLocationEl.textContent = `Inseguimento...`;
+                gyroDataEl.textContent = `Movimento brusco`;
+            }, 1500);
             setTimeout(() => {
                 heartRateEl.textContent = `135 BPM`;
                 noiseLevelEl.textContent = `Urla`;
-                logEvent('L\'IA rileva una grave anomalia: battito cardiaco e rumore elevati. Valutazione della minaccia...', 'warning');
-            }, 1000);
-            setTimeout(() => {
-                activateEmergencyMode('simulazione minaccia');
+                logEvent('L\'AI ha analizzato il battito cardiaco elevato e il rumore per classificare la minaccia come CRITICA. Preparazione all\'attivazione.', 'danger');
             }, 3000);
+            setTimeout(() => {
+                activateEmergencyMode('previsione IA');
+            }, 4500);
         });
 
         resetBtn.addEventListener('click', () => {
